@@ -1,1 +1,1 @@
-package no_ghost
+package main

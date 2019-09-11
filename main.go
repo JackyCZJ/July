@@ -1,8 +1,8 @@
-package no_ghost
+package main
 
 import "github.com/labstack/echo"
 
 func main() {
 	e := echo.New()
-	e.run()
+	e.Logger.Fatal(e.Start(":1323"))
 }

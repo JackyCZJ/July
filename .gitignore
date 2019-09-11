@@ -64,3 +64,5 @@ coverage.out
 conf/server.*
 .log/
 .vscode/
+
+NoGhost

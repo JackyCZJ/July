@@ -1,0 +1,74 @@
+version: '3'
+
+services:
+    redis1:
+      image: publicisworldwide/redis-cluster
+      restart: always
+      container_name: node_1
+      volumes:
+        - ./data/redis/8001/data:/data
+      environment:
+        - REDIS_PORT=8001
+      ports:
+        - '8001:8001'
+        - '18001:18001'
+
+    redis2:
+      image: publicisworldwide/redis-cluster
+      restart: always
+      container_name: node_2
+      volumes:
+        - ./data/redis/8002/data:/data
+      environment:
+        - REDIS_PORT=8002
+      ports:
+        - '8002:8002'
+        - '18002:18002'
+
+    redis3:
+      image: publicisworldwide/redis-cluster
+      restart: always
+      container_name: node_3
+      volumes:
+        - ./data/redis/8003/data:/data
+      environment:
+        - REDIS_PORT=8003
+      ports:
+        - '8003:8003'
+        - '18003:18003'
+
+    redis4:
+      image: publicisworldwide/redis-cluster
+      restart: always
+      container_name: node_4
+      volumes:
+        - ./data/redis/8004/data:/data
+      environment:
+        - REDIS_PORT=8004
+      ports:
+        - '8004:8004'
+        - '18004:18004'
+
+    redis5:
+      image: publicisworldwide/redis-cluster
+      container_name: node_5
+      restart: always
+      volumes:
+        - ./data/redis/8005/data:/data
+      environment:
+        - REDIS_PORT=8005
+      ports:
+        - '8005:8005'
+        - '18005:18005'
+
+    redis6:
+      image: publicisworldwide/redis-cluster
+      restart: always
+      container_name: node_6
+      volumes:
+        - ./data/redis/8006/data:/data
+      environment:
+        - REDIS_PORT=8006
+      ports:
+        - '8006:8006'
+        - '18006:18006'

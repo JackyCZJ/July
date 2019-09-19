@@ -8,7 +8,7 @@ func TestUserInformation_Create(t *testing.T) {
 	Client.Init()
 	defer Client.Close()
 	ui := UserInformation{
-		Username: "Jacky",
+		Username: "JackyTest",
 		Password: "wtfIsPassword",
 	}
 	err := ui.Create()
@@ -22,11 +22,37 @@ func TestUserModel_GetUser(t *testing.T) {
 	defer Client.Close()
 
 	Um := UserInformation{
-		Username: "Jacky",
+		Username: "JackyTest",
 	}
 	u, err := Um.GetUser()
 	if err != nil {
 		t.Fatal(err)
 	}
 	t.Log(u)
+}
+
+func TestUserInformation_GetId(t *testing.T) {
+	Client.Init()
+	defer Client.Close()
+
+	Um := UserInformation{
+		Username: "JackyTest",
+	}
+	u, err := Um.GetId()
+	if err != nil {
+		t.Fatal(err)
+	}
+	t.Log(u)
+}
+
+func TestUserInformation_del(t *testing.T) {
+	Client.Init()
+	defer Client.Close()
+	Um := UserInformation{
+		Username: "JackyTest",
+	}
+	err := Um.del()
+	if err != nil {
+		t.Fatal(err)
+	}
 }

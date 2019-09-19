@@ -1,16 +1,25 @@
 package user
 
 import (
+	"net/http"
 	"regexp"
 	"time"
 
 	"github.com/jackyczj/NoGhost/pkg/auth"
+	"github.com/jackyczj/NoGhost/store"
+	"github.com/jackyczj/NoGhost/utils"
 
 	"github.com/spf13/viper"
 
 	"github.com/dgrijalva/jwt-go"
 	"github.com/labstack/echo"
 )
+
+type Token struct {
+	Token     string    `json:"token"`
+	ExpiresAt time.Time `json:"expires_at"`
+	UserID    string    `json:"-"`
+}
 
 func Login(e echo.Context) error {
 
@@ -28,14 +37,24 @@ func Login(e echo.Context) error {
 	if err != nil {
 		return err
 	}
+	var s store.UserInformation
 	isEmail, err := regexp.MatchString("/[A-Z0-9a-z._%+-]+@[A-Za-z0-9.-]+\\.[A-Za-z]{2,4}/", username)
-	if isPhone {
-
-	} else if isEmail {
-
+	if err != nil {
+		return err
 	}
-	if a := auth.Compare(password, password); a != nil {
-		return a
+	if isPhone {
+		s.Phone = username
+	} else if isEmail {
+		s.Email = username
+	} else if isUsername {
+		s.Username = username
+	}
+	u, err := s.GetUser()
+	if err != nil {
+		return echo.NewHTTPError(401, "AuthFailed", "username not found.")
+	}
+	if a := auth.Compare(u.Password, password); a != nil {
+		return echo.NewHTTPError(401, "AuthFailed", "password incorrect.")
 	}
 
 	claims["name"] = username
@@ -47,8 +66,17 @@ func Login(e echo.Context) error {
 	if err != nil {
 		return err
 	}
-
-	return nil
+	id, err := u.GetId()
+	if err != nil {
+		return err
+	}
+	t := &Token{
+		Token:     utils.NewUUID(),
+		ExpiresAt: time.Now().Add(time.Hour * 96),
+		// 这个userid应该是检索出来的，这里为demo写死。
+		UserID: id,
+	}
+	return e.JSON(http.StatusOK, t)
 
 }
 

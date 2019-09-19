@@ -1,0 +1,19 @@
+log:
+  writers: file,stdout
+  logger_level: DEBUG
+  logger_file: log/ovn-client.log
+  log_format_text: true
+  rollingPolicy: size
+  log_rotate_date: 1
+  log_rotate_size: 1
+  log_backup_count: 7
+jwt_secret: Rtg8BPKNEf2mB41gvKONGPZZQSaJWN2ijxR422Rgq0iBb5
+tls:
+  addr: :8081
+  cert: conf/server.crt
+  key: conf/server.key
+port: 8080
+mgo:
+  database: "NoGhost"
+  url: "mongodb://mongo1:27017,mongo2:27018,mongo3:27019/?replicaSet=rs0"
+redis:

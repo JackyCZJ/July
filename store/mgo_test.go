@@ -1,31 +1,36 @@
 package store
 
 import (
-	"sync"
+	"context"
 	"testing"
+	"time"
+
+	"go.mongodb.org/mongo-driver/bson"
 )
 
-func TestClient_ping(t *testing.T) {
-	type fields struct {
-		Mutex sync.Mutex
-		mgo   *mongo.Client
+func TestOpenDB(t *testing.T) {
+	db := openDB("mongodb://mongo1:27017,mongo2:27018,mongo3:27019/?replicaSet=rs0", "testing")
+
+	collection := db.Collection("user")
+	res, err := collection.InsertOne(context.Background(), UserInformation{Username: "world"})
+	if err != nil {
+		t.Fatal(err)
 	}
-	tests := []struct {
-		name    string
-		fields  fields
-		wantErr bool
-	}{
-		// TODO: Add test cases.
-	}
-	for _, tt := range tests {
-		t.Run(tt.name, func(t *testing.T) {
-			c := &Client{
-				Mutex: tt.fields.Mutex,
-				mgo:   tt.fields.mgo,
-			}
-			if err := c.ping(); (err != nil) != tt.wantErr {
-				t.Errorf("ping() error = %v, wantErr %v", err, tt.wantErr)
-			}
-		})
-	}
+	id := res.InsertedID
+
+	t.Log(id)
+
+	defer func() {
+		ctx, cancel := context.WithTimeout(context.Background(), 20*time.Second)
+		defer cancel()
+		m := bson.M{
+			"username": "world",
+		}
+		d, err := collection.DeleteMany(ctx, m)
+		if err != nil {
+			t.Fatal()
+		}
+		t.Log(d)
+
+	}()
 }

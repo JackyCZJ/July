@@ -7,9 +7,9 @@ import (
 	"sync"
 	"time"
 
-	"github.com/jackyczj/NoGhost/utils"
+	"github.com/jackyczj/July/utils"
 
-	"github.com/jackyczj/NoGhost/pkg/auth"
+	"github.com/jackyczj/July/pkg/auth"
 	"go.mongodb.org/mongo-driver/bson"
 	bson2 "gopkg.in/mgo.v2/bson"
 )
@@ -49,6 +49,7 @@ func (u *UserInformation) GetUser() (*UserInformation, error) {
 	ctx, cancel := context.WithTimeout(ctx, 1*time.Second)
 	defer cancel()
 	m := make(bson.M)
+	fmt.Println(u)
 	d, err := json.Marshal(u)
 	if err != nil {
 		return nil, err

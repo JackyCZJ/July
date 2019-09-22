@@ -1,9 +1,10 @@
-module github.com/jackyczj/NoGhost
+module github.com/jackyczj/July
 
 go 1.12
 
 require (
 	github.com/dgrijalva/jwt-go v3.2.0+incompatible
+	github.com/fsnotify/fsnotify v1.4.7
 	github.com/gin-gonic/gin v1.4.0
 	github.com/go-mgo/mgo v0.0.0-20180705113738-7446a0344b78
 	github.com/go-redis/cache v6.4.0+incompatible
@@ -15,6 +16,7 @@ require (
 	github.com/onsi/gomega v1.7.0 // indirect
 	github.com/satori/go.uuid v1.2.0
 	github.com/sirupsen/logrus v1.2.0
+	github.com/spf13/pflag v1.0.3
 	github.com/spf13/viper v1.4.0
 	github.com/vmihailenco/msgpack v4.0.4+incompatible
 	github.com/xdg/scram v0.0.0-20180814205039-7eeb5667e42c // indirect

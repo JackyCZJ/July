@@ -28,7 +28,7 @@ func TestUserModel_GetUser(t *testing.T) {
 	if err != nil {
 		t.Fatal(err)
 	}
-	t.Log(u)
+	t.Log(u.Password)
 }
 
 func TestUserInformation_GetId(t *testing.T) {

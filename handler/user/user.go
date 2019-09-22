@@ -5,9 +5,11 @@ import (
 	"regexp"
 	"time"
 
-	"github.com/jackyczj/NoGhost/pkg/auth"
-	"github.com/jackyczj/NoGhost/store"
-	"github.com/jackyczj/NoGhost/utils"
+	"github.com/sirupsen/logrus"
+
+	"github.com/jackyczj/July/pkg/auth"
+	"github.com/jackyczj/July/store"
+	"github.com/jackyczj/July/utils"
 
 	"github.com/spf13/viper"
 
@@ -21,8 +23,11 @@ type Token struct {
 	UserID    string    `json:"-"`
 }
 
-func Login(e echo.Context) error {
+func init() {
+	store.Client.Init()
+}
 
+func Login(e echo.Context) error {
 	username := e.FormValue("username")
 	password := e.FormValue("password")
 
@@ -33,29 +38,33 @@ func Login(e echo.Context) error {
 	if err != nil {
 		return err
 	}
-	isUsername, err := regexp.MatchString("/[A-Za-z][A-Za-z0-9]{12}/", username)
-	if err != nil {
-		return err
-	}
-	var s store.UserInformation
+
+	s := store.UserInformation{}
 	isEmail, err := regexp.MatchString("/[A-Z0-9a-z._%+-]+@[A-Za-z0-9.-]+\\.[A-Za-z]{2,4}/", username)
 	if err != nil {
 		return err
 	}
 	if isPhone {
-		s.Phone = username
+		s = store.UserInformation{
+			Phone: username,
+		}
 	} else if isEmail {
-		s.Email = username
-	} else if isUsername {
-		s.Username = username
+		s = store.UserInformation{
+			Email: username,
+		}
+	} else {
+		s = store.UserInformation{
+			Username: username,
+		}
 	}
 	u, err := s.GetUser()
 	if err != nil {
-		return echo.NewHTTPError(401, "AuthFailed", "username not found.")
+		return echo.NewHTTPError(401, "AuthFailed,username not found.")
 	}
 	if a := auth.Compare(u.Password, password); a != nil {
-		return echo.NewHTTPError(401, "AuthFailed", "password incorrect.")
+		return echo.NewHTTPError(401, "AuthFailed,password incorrect.")
 	}
+	logrus.Info("password pass!")
 
 	claims["name"] = username
 
@@ -73,8 +82,7 @@ func Login(e echo.Context) error {
 	t := &Token{
 		Token:     utils.NewUUID(),
 		ExpiresAt: time.Now().Add(time.Hour * 96),
-		// 这个userid应该是检索出来的，这里为demo写死。
-		UserID: id,
+		UserID:    id,
 	}
 	return e.JSON(http.StatusOK, t)
 

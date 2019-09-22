@@ -1,3 +1,4 @@
+name: July
 log:
   writers: file,stdout
   logger_level: DEBUG
@@ -14,6 +15,6 @@ tls:
   key: conf/server.key
 port: 8080
 mgo:
-  database: "NoGhost"
+  database: "July"
   url: "mongodb://mongo1:27017,mongo2:27018,mongo3:27019/?replicaSet=rs0"
 redis:

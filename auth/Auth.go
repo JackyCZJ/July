@@ -1,13 +1,13 @@
-package Auth
+package auth
 
 import (
 	"strings"
 
 	"github.com/go-redis/cache"
 
-	cacheClient "github.com/jackyczj/NoGhost/cache"
+	cacheClient "github.com/jackyczj/July/cache"
 
-	"github.com/jackyczj/NoGhost/handler/user"
+	"github.com/jackyczj/July/handler/user"
 	"github.com/labstack/echo"
 	"github.com/sirupsen/logrus"
 	"github.com/spf13/viper"

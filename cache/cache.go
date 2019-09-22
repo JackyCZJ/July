@@ -22,6 +22,12 @@ var (
 
 // 初始化缓存
 func InitCache() {
+	Rdb = redis.NewClient(
+		&redis.Options{
+			Addr:     "localhost:8001",
+			Password: "",
+			DB:       0,
+		})
 	cc = &cache.Codec{
 		Redis: Rdb,
 		Marshal: func(v interface{}) ([]byte, error) {
@@ -35,11 +41,14 @@ func InitCache() {
 
 // setCc 写缓存
 func SetCc(key string, object interface{}, exp time.Duration) {
-	cc.Set(&cache.Item{
+	err := cc.Set(&cache.Item{
 		Key:        key,
 		Object:     object,
 		Expiration: exp,
 	})
+	if err != nil {
+		logrus.Error(err.Error())
+	}
 }
 
 // getCc 读缓存
@@ -49,7 +58,9 @@ func GetCc(key string, pointer interface{}) error {
 
 // delCc 清缓存
 func DelCc(key string) {
-	cc.Delete(key)
+	if err := cc.Delete(key); err != nil {
+		logrus.Error(err.Error())
+	}
 }
 
 // cleanCc 批量清除一类缓存

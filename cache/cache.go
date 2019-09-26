@@ -4,6 +4,8 @@ import (
 	"net/http"
 	"time"
 
+	"github.com/spf13/viper"
+
 	"github.com/go-redis/redis"
 
 	"github.com/go-redis/cache"
@@ -14,22 +16,48 @@ import (
 )
 
 var (
-	// redis client
-	Rdb *redis.Client
+	//Ring *redis.Ring
 	// global cache
 	cc *cache.Codec
+
+	Cluster *redis.ClusterClient
 )
 
 // 初始化缓存
 func InitCache() {
-	Rdb = redis.NewClient(
-		&redis.Options{
-			Addr:     "localhost:8001",
-			Password: "",
-			DB:       0,
-		})
+	//addrSlice := viper.GetStringSlice("redis.cluster")
+	//Ring = redis.NewRing(&redis.RingOptions{
+	//	Addrs: addrMap,
+	//	DB:    0,
+	//})
+	opt := redis.ClusterOptions{}
+	addrSlice := viper.GetStringSlice("redis.cluster")
+	opt.ClusterSlots = func() ([]redis.ClusterSlot, error) {
+		slots := []redis.ClusterSlot{{
+			Start: 0,
+			End:   4999,
+			Nodes: []redis.ClusterNode{{
+				Addr: addrSlice[0],
+			}},
+		}, {
+			Start: 5000,
+			End:   9999,
+			Nodes: []redis.ClusterNode{{
+				Addr: addrSlice[1],
+			}},
+		}, {
+			Start: 10000,
+			End:   16383,
+			Nodes: []redis.ClusterNode{{
+				Addr: addrSlice[2],
+			}},
+		}}
+		return slots, nil
+	}
+	Cluster = redis.NewClusterClient(&opt)
+
 	cc = &cache.Codec{
-		Redis: Rdb,
+		Redis: Cluster,
 		Marshal: func(v interface{}) ([]byte, error) {
 			return msgpack.Marshal(v)
 		},
@@ -70,7 +98,7 @@ func CleanCc(cate string) {
 		return
 	}
 	i := 0
-	for _, key := range Rdb.Keys(cate + "*").Val() {
+	for _, key := range Cluster.Keys(cate + "*").Val() {
 		DelCc(key)
 		i++
 	}

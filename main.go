@@ -33,7 +33,7 @@ func init() {
 }
 
 var (
-	cfg = pflag.StringP("config", "c", "", "ovn-client config file path.")
+	cfg = pflag.StringP("config", "c", "", "July config file path.")
 )
 
 func main() {
@@ -78,7 +78,7 @@ func main() {
 			}
 		}()
 		cacheClient.InitCache()
-		_, err := cacheClient.Rdb.Ping().Result()
+		_, err := cacheClient.Cluster.Ping().Result()
 		if err != nil {
 			panic(err)
 		}

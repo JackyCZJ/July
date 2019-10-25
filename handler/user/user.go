@@ -197,12 +197,7 @@ func Set(e echo.Context) error {
 		logrus.Error(err)
 		return echo.NewHTTPError(401, "Edit fail , may system error.")
 	}
-	message := struct {
-		Message string `json:"message"`
-	}{
-		Message: "Edit success",
-	}
-	return e.JSON(200, message)
+	return e.JSON(200, "Edit success")
 }
 
 func VailPhone(phone string) bool {

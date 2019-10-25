@@ -7,6 +7,8 @@ import (
 	"sync"
 	"time"
 
+	"go.mongodb.org/mongo-driver/mongo/options"
+
 	"github.com/jackyczj/July/utils"
 
 	"github.com/jackyczj/July/pkg/auth"
@@ -49,7 +51,6 @@ func (u *UserInformation) GetUser() (*UserInformation, error) {
 	ctx, cancel := context.WithTimeout(ctx, 1*time.Second)
 	defer cancel()
 	m := make(bson.M)
-	fmt.Println(u)
 	d, err := json.Marshal(u)
 	if err != nil {
 		return nil, err
@@ -85,16 +86,9 @@ func (u *UserInformation) GetId() (string, error) {
 	if err != nil {
 		return "", err
 	}
-	a := s.Lookup("_id").String()
-	var id objectId
-	if err := json.Unmarshal([]byte(a), &id); err != nil {
-		return "", err
-	}
-	return id.Id, nil
-}
+	id := s.Lookup("Id").String()
 
-type objectId struct {
-	Id string `json:"$oid"`
+	return id, nil
 }
 
 func (u *UserInformation) del() error {
@@ -111,5 +105,26 @@ func (u *UserInformation) del() error {
 	if result.Err() != nil {
 		return err
 	}
+	return nil
+}
+
+func (u *UserInformation) Set() error {
+	u.Lock()
+	defer u.Unlock()
+	ctx := context.Background()
+	ctx, cancel := context.WithTimeout(ctx, 1*time.Second)
+	defer cancel()
+	m, err := utils.JsonToBson(u)
+	if err != nil {
+		return err
+	}
+	op := options.FindOneAndUpdate()
+	op.SetProjection(bson.D{{"id", u.Id}})
+
+	result := Client.db.Collection("user").FindOneAndUpdate(ctx, u, m)
+	if result.Err() != nil {
+		return result.Err()
+	}
+
 	return nil
 }

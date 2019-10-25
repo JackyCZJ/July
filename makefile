@@ -5,14 +5,15 @@ build:
 	go build .
 
 clean:
-	rm noghost
+	rm july
 	find . -name "[._]*.s[a-w][a-z]" | xargs -i rm -f {}
 
 gotool:
+	go test ./...
 	gofmt -d .
-	go vet . | grep -v vendor;true
+	go vet -race  ./...
 ca:
-	openssl req -new -nodes -x509 -out conf/server.crt -keyout conf/server.key -days 3650 -subj "/C=DE/ST=NRW/L=Earth/O=Random Company/OU=IT/CN=127.0.0.1/emailAddress=xxxxx@qq.com"
+	openssl req -new -nodes -x509 -out conf/server.crt -keyout conf/server.key -days 3650 -subj "/C=DE/ST=NRW/L=Earth/O=Random Company/OU=IT/CN=127.0.0.1/emailAddress=a2281540@hotmail.com"
 
 help:
 	@echo "make - compile the source code"

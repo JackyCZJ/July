@@ -5,21 +5,19 @@ import (
 	"os"
 	"time"
 
+	"golang.org/x/crypto/acme/autocert"
+
 	"github.com/spf13/pflag"
 
 	"github.com/jackyczj/July/config"
-
-	"github.com/jackyczj/July/handler/user"
-
 	log "github.com/sirupsen/logrus"
 
 	"go.mongodb.org/mongo-driver/mongo/readpref"
 
-	Auth "github.com/jackyczj/July/auth"
 	cacheClient "github.com/jackyczj/July/cache"
 	"github.com/jackyczj/July/store"
-	"github.com/labstack/echo"
-	"github.com/labstack/echo/middleware"
+	"github.com/labstack/echo/v4"
+	"github.com/labstack/echo/v4/middleware"
 )
 
 func init() {
@@ -38,21 +36,11 @@ var (
 
 func main() {
 	pflag.Parse()
-
-	e := echo.New()
-	e.Use(middleware.Logger())
-	e.Use(middleware.Recover())
-	e.Use(middleware.CORS())
-	e.Use(middleware.KeyAuthWithConfig(middleware.KeyAuthConfig{
-		Skipper:   Auth.Skipper,
-		Validator: Auth.Validator,
-	}))
-	// init config
-
 	if err := config.Init(*cfg); err != nil {
 		panic(err)
 	}
-	e.POST("/login", user.Login)
+	e := echo.New()
+	Load(e)
 	ctx := context.TODO()
 	ctx, cancel := context.WithTimeout(ctx, 10*time.Second)
 
@@ -67,7 +55,6 @@ func main() {
 		if err != nil {
 			panic(err)
 		}
-		log.Println("MongoDB OK!")
 	}()
 	defer store.Client.Close()
 	e.Use(middleware.CORS())
@@ -82,8 +69,11 @@ func main() {
 		if err != nil {
 			panic(err)
 		}
-		log.Println("Redis OK!")
 	}()
-
+	go func(e *echo.Echo) {
+		e.AutoTLSManager.Cache = autocert.DirCache("/conf")
+		e.Logger.Fatal("TLS service start at port:", e.StartAutoTLS(":443"))
+	}(e)
 	e.Logger.Fatal("Service start at port:", e.Start(":2333"))
+
 }

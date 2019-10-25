@@ -8,7 +8,7 @@ import (
 	cacheClient "github.com/jackyczj/July/cache"
 
 	"github.com/jackyczj/July/handler/user"
-	"github.com/labstack/echo"
+	"github.com/labstack/echo/v4"
 	"github.com/sirupsen/logrus"
 	"github.com/spf13/viper"
 )
@@ -20,8 +20,8 @@ func Skipper(c echo.Context) bool {
 	// 先处理非GET方法，除了登录，现实中还可能有一些 webhooks
 	switch path {
 	case
-		// 登录
-		"/login":
+		"/login",
+		"/register":
 		return true
 	}
 	// 从这里开始必须是GET方法
@@ -35,6 +35,7 @@ func Skipper(c echo.Context) bool {
 	switch resource {
 	case
 		// 公开信息，把需要公开的资源每个一行写这里
+		"goods",
 		"swagger",
 		"public":
 		return true

@@ -1,13 +1,24 @@
 package main
 
 import (
+	Auth "github.com/jackyczj/July/auth"
 	"github.com/jackyczj/July/handler/user"
-	"github.com/labstack/echo"
+	"github.com/labstack/echo/v4"
+	"github.com/labstack/echo/v4/middleware"
 )
 
-var Router echo.Router
+func Load(e *echo.Echo) {
+	e.Use(middleware.Logger())
+	e.Use(middleware.Recover())
+	e.Use(middleware.CORS())
+	//e.Use(middleware.CSRF())
+	e.Use(middleware.KeyAuthWithConfig(middleware.KeyAuthConfig{
+		Skipper:   Auth.Skipper,
+		Validator: Auth.Validator,
+	}))
 
-func init() {
-	Router.Add(echo.POST, "login", user.Login)
+	// init config
+	e.POST("/login", user.Login)
+	e.POST("/register", user.Register)
 
 }

@@ -9,7 +9,7 @@ import (
 	"github.com/go-redis/redis"
 
 	"github.com/go-redis/cache"
-	"github.com/labstack/echo"
+	"github.com/labstack/echo/v4"
 	"github.com/sirupsen/logrus"
 
 	"github.com/vmihailenco/msgpack"

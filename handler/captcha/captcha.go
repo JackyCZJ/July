@@ -3,7 +3,6 @@ package captcha
 import (
 	"encoding/json"
 	"log"
-	"net/http"
 	"time"
 
 	"github.com/labstack/echo/v4"
@@ -31,6 +30,14 @@ type ConfigJsonBody struct {
 	ConfigAudio     base64Captcha.ConfigAudio
 	ConfigCharacter base64Captcha.ConfigCharacter
 	ConfigDigit     base64Captcha.ConfigDigit
+}
+
+func Generate(e echo.Context) error {
+	return generateCaptchaHandler(e)
+}
+
+func Verify(e echo.Context) error {
+	return captchaVerifyHandle(e)
 }
 
 // base64Captcha create http handler
@@ -70,7 +77,7 @@ func generateCaptchaHandler(e echo.Context) error {
 }
 
 // base64Captcha verify http handler
-func captchaVerifyHandle(w http.ResponseWriter, ctx echo.Context) error {
+func captchaVerifyHandle(ctx echo.Context) error {
 
 	//parse request parameters
 	//接收客户端发送来的请求参数

@@ -2,6 +2,7 @@ package main
 
 import (
 	Auth "github.com/jackyczj/July/auth"
+	"github.com/jackyczj/July/handler/captcha"
 	"github.com/jackyczj/July/handler/user"
 	"github.com/labstack/echo/v4"
 	"github.com/labstack/echo/v4/middleware"
@@ -20,5 +21,7 @@ func Load(e *echo.Echo) {
 	// init config
 	e.POST("/login", user.Login)
 	e.POST("/register", user.Register)
+	e.GET("/captcha", captcha.Generate)
+	e.POST("/captcha", captcha.Verify)
 
 }

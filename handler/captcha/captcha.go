@@ -2,8 +2,11 @@ package captcha
 
 import (
 	"encoding/json"
-	"log"
 	"time"
+
+	"github.com/jackyczj/July/handler"
+
+	"github.com/sirupsen/logrus"
 
 	"github.com/labstack/echo/v4"
 
@@ -49,7 +52,7 @@ func generateCaptchaHandler(e echo.Context) error {
 	var postParameters ConfigJsonBody
 	err := decoder.Decode(&postParameters)
 	if err != nil {
-		log.Println(err)
+		logrus.Error(err)
 	}
 	defer e.Request().Body.Close()
 
@@ -85,7 +88,7 @@ func captchaVerifyHandle(ctx echo.Context) error {
 	var postParameters ConfigJsonBody
 	err := decoder.Decode(&postParameters)
 	if err != nil {
-		log.Println(err)
+		logrus.Error(err)
 	}
 	defer ctx.Request().Body.Close()
 	//verify the captcha
@@ -94,9 +97,15 @@ func captchaVerifyHandle(ctx echo.Context) error {
 
 	//set json response
 	//设置json响应
-	body := map[string]interface{}{"code": "error", "data": "验证失败", "msg": "captcha failed"}
-	if verifyResult {
-		body = map[string]interface{}{"code": "success", "data": "验证通过", "msg": "captcha verified"}
+	res := handler.ResponseStruct{
+		Code:    0,
+		Message: "captcha failed",
+		Data:    "验证失败",
 	}
-	return ctx.JSON(200, body)
+	if verifyResult {
+		res.Code = 1
+		res.Data = "验证通过"
+		res.Message = "captcha verified"
+	}
+	return ctx.JSON(200, res)
 }

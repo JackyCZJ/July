@@ -79,7 +79,6 @@ require (
 	github.com/valyala/fasttemplate v1.1.0 // indirect
 	github.com/vmihailenco/msgpack v4.0.4+incompatible
 	github.com/xtaci/kcp-go v5.4.11+incompatible // indirect
-	go.etcd.io/bbolt v1.3.3 // indirect
 	go.etcd.io/etcd v3.3.17+incompatible // indirect
 	go.mongodb.org/mongo-driver v1.1.2
 	go.opencensus.io v0.22.1 // indirect

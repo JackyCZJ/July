@@ -83,7 +83,7 @@ require (
 	go.mongodb.org/mongo-driver v1.1.2
 	go.opencensus.io v0.22.1 // indirect
 	go.uber.org/multierr v1.2.0 // indirect
-	go.uber.org/zap v1.11.0 // indirect
+	go.uber.org/zap v1.11.0
 	golang.org/x/crypto v0.0.0-20191011191535-87dc89f01550
 	golang.org/x/exp v0.0.0-20191024150812-c286b889502e // indirect
 	golang.org/x/image v0.0.0-20191009234506-e7c1f5e7dbb8 // indirect
@@ -95,9 +95,10 @@ require (
 	golang.org/x/tools v0.0.0-20191025023517-2077df36852e // indirect
 	golang.org/x/xerrors v0.0.0-20191011141410-1b5146add898 // indirect
 	google.golang.org/appengine v1.6.5 // indirect
-	google.golang.org/grpc v1.24.0 // indirect
+	google.golang.org/grpc v1.24.0
 	gopkg.in/check.v1 v1.0.0-20190902080502-41f04d3bba15 // indirect
 	gopkg.in/go-playground/validator.v9 v9.30.0 // indirect
 	gopkg.in/jcmturner/gokrb5.v7 v7.3.0 // indirect
 	gopkg.in/mgo.v2 v2.0.0-20190816093944-a6b53ec6cb22
+	gopkg.in/natefinch/lumberjack.v2 v2.0.0
 )

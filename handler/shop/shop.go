@@ -8,7 +8,6 @@ func Add(ctx echo.Context) error {
 
 func Delete(ctx echo.Context) error {
 	return nil
-
 }
 
 func List(ctx echo.Context) error {

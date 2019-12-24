@@ -7,6 +7,10 @@ import (
 	"sync"
 	"time"
 
+	"github.com/go-redis/cache"
+
+	cacheClient "github.com/jackyczj/July/cache"
+
 	"go.mongodb.org/mongo-driver/mongo/options"
 
 	"github.com/jackyczj/July/utils"
@@ -35,21 +39,29 @@ func (u *UserInformation) Create() error {
 	if err != nil {
 		return err
 	}
-
-	id, err := Client.db.Collection("user").InsertOne(context.TODO(), u)
+	ctx, cancel := context.WithTimeout(context.TODO(), 3*time.Second)
+	defer cancel()
+	id, err := Client.db.Collection("user").InsertOne(ctx, u)
 	if err != nil {
 		return err
 	}
 	fmt.Println("New member register , id:", id.InsertedID)
+	cacheClient.SetCc("user."+u.Username, u, time.Hour*24)
 	return nil
 }
 
 func (u *UserInformation) GetUser() (*UserInformation, error) {
 	u.RLock()
 	defer u.RUnlock()
-	ctx := context.Background()
-	ctx, cancel := context.WithTimeout(ctx, 1*time.Second)
-	defer cancel()
+	err := cacheClient.GetCc("user."+u.Username, &u)
+	switch err {
+	case nil:
+		return u, nil
+	default:
+		return nil, err
+	case cache.ErrCacheMiss:
+	}
+
 	m := make(bson.M)
 	d, err := json.Marshal(u)
 	if err != nil {
@@ -59,12 +71,14 @@ func (u *UserInformation) GetUser() (*UserInformation, error) {
 	if err != nil {
 		return nil, err
 	}
-
+	ctx := context.TODO()
+	ctx, cancel := context.WithTimeout(ctx, 1*time.Second)
+	defer cancel()
 	err = Client.db.Collection("user").FindOne(ctx, m).Decode(&u)
 	if err != nil {
 		return nil, err
 	}
-
+	cacheClient.SetCc("user."+u.Username, u, time.Hour*24)
 	return u, nil
 }
 
@@ -91,7 +105,7 @@ func (u *UserInformation) GetId() (string, error) {
 	return id, nil
 }
 
-func (u *UserInformation) del() error {
+func (u *UserInformation) Delete() error {
 	u.Lock()
 	defer u.Unlock()
 	ctx := context.Background()
@@ -105,6 +119,7 @@ func (u *UserInformation) del() error {
 	if result.Err() != nil {
 		return err
 	}
+	cacheClient.DelCc("user." + u.Username)
 	return nil
 }
 
@@ -125,6 +140,10 @@ func (u *UserInformation) Set() error {
 	if result.Err() != nil {
 		return result.Err()
 	}
-
+	err = Client.db.Collection("user").FindOne(ctx, m).Decode(&u)
+	if err != nil {
+		return err
+	}
+	cacheClient.SetCc("user."+u.Username, u, time.Hour*24)
 	return nil
 }

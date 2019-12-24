@@ -1,12 +1,24 @@
 package store
 
 import (
+	"fmt"
 	"testing"
+
+	cacheClient "github.com/jackyczj/July/cache"
+
+	"github.com/jackyczj/July/config"
 )
 
-func TestUserInformation_Create(t *testing.T) {
+func init() {
 	Client.Init()
-	defer Client.Close()
+	err := config.Init("../conf/config.yaml")
+	if err != nil {
+		panic(err)
+	}
+	cacheClient.InitCache()
+
+}
+func TestUserInformation_Create(t *testing.T) {
 	ui := UserInformation{
 		Username: "JackyTest",
 		Password: "wtfIsPassword",
@@ -18,9 +30,6 @@ func TestUserInformation_Create(t *testing.T) {
 }
 
 func TestUserModel_GetUser(t *testing.T) {
-	Client.Init()
-	defer Client.Close()
-
 	Um := UserInformation{
 		Username: "JackyTest",
 	}
@@ -28,12 +37,10 @@ func TestUserModel_GetUser(t *testing.T) {
 	if err != nil {
 		t.Fatal(err)
 	}
-	t.Log(u.Password)
+	fmt.Println(u)
 }
 
 func TestUserInformation_GetId(t *testing.T) {
-	Client.Init()
-	defer Client.Close()
 
 	Um := UserInformation{
 		Username: "JackyTest",
@@ -46,12 +53,11 @@ func TestUserInformation_GetId(t *testing.T) {
 }
 
 func TestUserInformation_del(t *testing.T) {
-	Client.Init()
-	defer Client.Close()
+
 	Um := UserInformation{
 		Username: "JackyTest",
 	}
-	err := Um.del()
+	err := Um.Delete()
 	if err != nil {
 		t.Fatal(err)
 	}

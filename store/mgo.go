@@ -23,7 +23,7 @@ func openDB(url string, database string) *mongo.Database {
 }
 
 func InitDB() *mongo.Database {
-	viper.SetDefault("mgo.database", "user")
+	viper.SetDefault("mgo.database", "July")
 	viper.SetDefault("mgo.url", "mongodb://mongo1:27017,mongo2:27018,mongo3:27019/?replicaSet=rs0")
 	database := viper.GetString("mgo.database")
 	url := viper.GetString("mgo.url")
@@ -35,7 +35,7 @@ func openClient(url string) *mongo.Client {
 	if err != nil {
 		log.Fatal(err)
 	}
-	ctx := context.Background()
+	ctx := context.TODO()
 	err = client.Connect(ctx)
 	if err != nil {
 		log.Fatal(err)

@@ -8,6 +8,7 @@ require (
 	cloud.google.com/go/storage v1.1.2 // indirect
 	github.com/OneOfOne/xxhash v1.2.5 // indirect
 	github.com/Shopify/sarama v1.24.0 // indirect
+	github.com/Unknwon/log v0.0.0-20150304194804-e617c87089d3
 	github.com/alecthomas/units v0.0.0-20190924025748-f65c72e2690d // indirect
 	github.com/aristanetworks/goarista v0.0.0-20191023202215-f096da5361bb // indirect
 	github.com/bilibili/kratos v0.2.3 // indirect
@@ -52,7 +53,7 @@ require (
 	github.com/magiconair/properties v1.8.1 // indirect
 	github.com/mattn/go-colorable v0.1.4 // indirect
 	github.com/mattn/go-isatty v0.0.10 // indirect
-	github.com/mojocn/base64Captcha v0.0.0-20190801020520-752b1cd608b2
+	github.com/mojocn/base64Captcha v1.2.3-0.20191212085120-a8fb006ae4e8
 	github.com/mwitkow/go-conntrack v0.0.0-20190716064945-2f068394615f // indirect
 	github.com/onsi/ginkgo v1.10.2 // indirect
 	github.com/openzipkin/zipkin-go v0.2.2 // indirect
@@ -63,6 +64,7 @@ require (
 	github.com/rcrowley/go-metrics v0.0.0-20190826022208-cac0b30c2563 // indirect
 	github.com/rogpeppe/fastuuid v1.2.0 // indirect
 	github.com/rogpeppe/go-internal v1.5.0 // indirect
+	github.com/rs/xid v1.2.1
 	github.com/samuel/go-zookeeper v0.0.0-20190923202752-2cc03de413da // indirect
 	github.com/satori/go.uuid v1.2.0
 	github.com/shirou/gopsutil v2.19.9+incompatible // indirect
@@ -86,7 +88,7 @@ require (
 	go.uber.org/zap v1.11.0
 	golang.org/x/crypto v0.0.0-20191011191535-87dc89f01550
 	golang.org/x/exp v0.0.0-20191024150812-c286b889502e // indirect
-	golang.org/x/image v0.0.0-20191009234506-e7c1f5e7dbb8 // indirect
+	golang.org/x/image v0.0.0-20191214001246-9130b4cfad52 // indirect
 	golang.org/x/mobile v0.0.0-20191025110607-73ccc5ba0426 // indirect
 	golang.org/x/net v0.0.0-20191021144547-ec77196f6094 // indirect
 	golang.org/x/sync v0.0.0-20190911185100-cd5d95a43a6e // indirect

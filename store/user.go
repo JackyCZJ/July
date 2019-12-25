@@ -7,6 +7,8 @@ import (
 	"sync"
 	"time"
 
+	"github.com/rs/xid"
+
 	"github.com/go-redis/cache"
 
 	cacheClient "github.com/jackyczj/July/cache"
@@ -21,7 +23,7 @@ import (
 )
 
 type UserInformation struct {
-	Id       string `json:"_id,omitempty"`
+	Id       string `json:"id,omitempty"`
 	Username string `json:"username" validate:"min=1,max=32"`
 	Password string `json:"password,omitempty" validate:"min=1,max=32"`
 	Email    string `json:"email,omitempty"`
@@ -41,11 +43,12 @@ func (u *UserInformation) Create() error {
 	}
 	ctx, cancel := context.WithTimeout(context.TODO(), 3*time.Second)
 	defer cancel()
-	id, err := Client.db.Collection("user").InsertOne(ctx, u)
+	u.Id = xid.New().String()
+	_, err = Client.db.Collection("user").InsertOne(ctx, u)
 	if err != nil {
 		return err
 	}
-	fmt.Println("New member register , id:", id.InsertedID)
+	fmt.Println("New member register , id:", u.Id)
 	cacheClient.SetCc("user."+u.Username, u, time.Hour*24)
 	return nil
 }
@@ -134,7 +137,7 @@ func (u *UserInformation) Set() error {
 		return err
 	}
 	op := options.FindOneAndUpdate()
-	op.SetProjection(bson.D{{"id", u.Id}})
+	op.SetProjection(bson.D{{Key: "id", Value: u.Id}})
 
 	result := Client.db.Collection("user").FindOneAndUpdate(ctx, u, m)
 	if result.Err() != nil {

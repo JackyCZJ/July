@@ -1,13 +1,12 @@
 name: July
-log:
-  writers: file,stdout
-  logger_level: DEBUG
-  logger_file: log/ovn-client.log
-  log_format_text: true
-  rollingPolicy: size
-  log_rotate_date: 1
-  log_rotate_size: 1
-  log_backup_count: 7
+
+zap:
+  Compress: true
+  MaxSize: 100
+  FileName: "july-log.log"
+  MaxBackup: 5
+  LocalTime: true
+
 jwt_secret: Rtg8BPKNEf2mB41gvKONGPZZQSaJWN2ijxR422Rgq0iBb5
 tls:
   addr: :8081

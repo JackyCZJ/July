@@ -13,7 +13,7 @@ import (
 func Load(e *echo.Echo) {
 	e.Use(middleware.Logger())
 	e.Use(middleware.Recover())
-	e.Use(middleware.CORS())
+	//e.Use(middleware.CORS())
 	//c := middleware.CSRFConfig{
 	//	Skipper:      middleware.DefaultSkipper,
 	//	TokenLength:  32,
@@ -24,23 +24,25 @@ func Load(e *echo.Echo) {
 	//}
 	//e.Use(middleware.CSRFWithConfig(c))
 	e.Use(middleware.KeyAuthWithConfig(middleware.KeyAuthConfig{
-		Skipper:   Auth.Skipper,
-		Validator: Auth.Validator,
+		Skipper:    Auth.Skipper,
+		Validator:  Auth.Validator,
+		KeyLookup:  "header:" + echo.HeaderAuthorization,
+		AuthScheme: "Bearer",
 	}))
 
 	// init config
 	//Account := e.Group("/user/", middleware.CSRF())
-	Account := e.Group("/user/")
+	Account := e.Group("/user")
 	{
-		Account.POST("/login", user.Login, middleware.CSRF())
-		Account.POST("/register", user.Register, middleware.CSRF())
+		Account.POST("/login", user.Login)
+		Account.POST("/register", user.Register)
 
 	}
 
-	Cap := e.Group("/captcha", middleware.CSRF())
+	Cap := e.Group("/captcha")
 	{
-		Cap.GET("", captcha.Generate)
-		Cap.POST("", captcha.Verify)
+		Cap.POST("/get", captcha.Generate)
+		Cap.POST("/verify", captcha.Verify)
 	}
 
 	//Todo: ⬇️

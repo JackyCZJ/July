@@ -1,7 +1,6 @@
 package cache
 
 import (
-	"net/http"
 	"time"
 
 	"github.com/spf13/viper"
@@ -9,7 +8,6 @@ import (
 	"github.com/go-redis/redis"
 
 	"github.com/go-redis/cache"
-	"github.com/labstack/echo/v4"
 	"github.com/sirupsen/logrus"
 
 	"github.com/vmihailenco/msgpack"
@@ -103,17 +101,4 @@ func CleanCc(cate string) {
 		i++
 	}
 	logrus.Infof("delete %d %s cache", i, cate)
-}
-
-func DeleteCache(c echo.Context) error {
-	cate := c.Param("cate")
-	switch cate {
-	case "token":
-		CleanCc("token")
-	case "all":
-		CleanCc("token")
-	default:
-		return echo.NewHTTPError(400, "InvalidID", "请在URL中提供合法的缓存类型")
-	}
-	return c.NoContent(http.StatusNoContent)
 }

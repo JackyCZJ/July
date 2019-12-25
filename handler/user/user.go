@@ -49,11 +49,12 @@ func Login(e echo.Context) error {
 	claims := token.Claims.(jwt.MapClaims)
 
 	s := store.UserInformation{}
-	if isPhone(username) {
-		s = store.UserInformation{
-			Phone: username,
-		}
-	} else if isEmail(username) {
+	//if isPhone(username) {
+	//	s = store.UserInformation{
+	//		Phone: username,
+	//	}
+	//} else
+	if isEmail(username) {
 		s = store.UserInformation{
 			Email: username,
 		}
@@ -88,10 +89,16 @@ func Login(e echo.Context) error {
 		ExpiresAt: time.Now().Add(time.Hour * 76),
 		UserID:    id,
 	}
-	cache.SetCc("Token"+t.Token, t, time.Hour*76)
+	cache.SetCc("token:"+t.Token, t, time.Hour*76)
 	return e.JSON(http.StatusOK, t)
 
 }
+
+//
+//func Logout(e echo.Context) error {
+//	return e.JSON(http.StatusOK)
+//
+//}
 
 func Register(e echo.Context) error {
 
@@ -105,10 +112,10 @@ func Register(e echo.Context) error {
 	if password == "" {
 		return echo.NewHTTPError(401, "Password can't be empty")
 	}
-	phone := e.FormValue("phone")
-	if !isPhone(phone) {
-		return echo.NewHTTPError(401, "Phone format error")
-	}
+	//phone := e.FormValue("phone")
+	//if !isPhone(phone) {
+	//	return echo.NewHTTPError(401, "Phone format error")
+	//}
 	email := e.FormValue("mail")
 	if !isEmail(email) {
 		return echo.NewHTTPError(401, "Email format error")

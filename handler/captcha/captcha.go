@@ -1,24 +1,31 @@
 package captcha
 
 import (
-	"encoding/json"
+	"math/rand"
 	"time"
+
+	"github.com/mojocn/base64Captcha"
+
+	"github.com/jackyczj/July/cache"
 
 	"github.com/jackyczj/July/handler"
 
-	"github.com/sirupsen/logrus"
-
 	"github.com/labstack/echo/v4"
-
-	"github.com/mojocn/base64Captcha"
 )
+
+func init() {
+	//init rand seed
+	rand.Seed(time.Now().UnixNano())
+}
 
 const (
 	// Default number of digits in captcha solution.
-	DefaultLen = 6
+	DefaultLen      = 6
+	DefaultDotCount = 30
 	// The number of captchas created that triggers garbage collection used
 	// by default store.
-	CollectNum = 100
+	CollectNum     = 100
+	DefaultMaxSkew = 3
 	// Expiration time of captchas used by default store.
 	Expiration = 10 * time.Minute
 	// Standard width and height of a captcha image.
@@ -27,12 +34,34 @@ const (
 )
 
 type ConfigJsonBody struct {
-	Id              string
-	CaptchaType     string
-	VerifyValue     string
-	ConfigAudio     base64Captcha.ConfigAudio
-	ConfigCharacter base64Captcha.ConfigCharacter
-	ConfigDigit     base64Captcha.ConfigDigit
+	Id          string `json:"id"`
+	VerifyValue string `json:"verify_value"`
+	DriverDigit *base64Captcha.DriverDigit
+}
+
+var store Store
+
+//implementing Store interface
+type Store struct {
+}
+
+func (Store) Set(id string, value string) {
+	cache.SetCc(id, value, 10*time.Minute)
+}
+
+func (Store) Get(id string, clear bool) string {
+	var s string
+	err := cache.GetCc(id, s)
+	if err != nil {
+		return ""
+	}
+	if clear {
+		cache.DelCc(id)
+	}
+	return s
+}
+func (s Store) Verify(id, answer string, clear bool) bool {
+	return answer == s.Get(id, clear)
 }
 
 func Generate(e echo.Context) error {
@@ -46,37 +75,46 @@ func Verify(e echo.Context) error {
 // base64Captcha create http handler
 func generateCaptchaHandler(e echo.Context) error {
 	//parse request parameters
-	//接收客户端发送来的请求参数
 
-	decoder := json.NewDecoder(e.Request().Body)
-	var postParameters ConfigJsonBody
-	err := decoder.Decode(&postParameters)
+	postParameters := new(ConfigJsonBody)
+	err := e.Bind(&postParameters)
 	if err != nil {
-		logrus.Error(err)
+		return err
 	}
-	defer e.Request().Body.Close()
+	postParameters.DriverDigit = &base64Captcha.DriverDigit{
+		Height:   StdHeight,
+		Width:    StdWidth,
+		Length:   DefaultLen,
+		MaxSkew:  DefaultMaxSkew,
+		DotCount: DefaultDotCount,
+	}
 
 	//create base64 encoding captcha
-
-	var config interface{}
-	switch postParameters.CaptchaType {
-	case "audio":
-		config = postParameters.ConfigAudio
-	case "character":
-		config = postParameters.ConfigCharacter
-	default:
-		config = postParameters.ConfigDigit
-	}
-	captchaId, captcaInterfaceInstance := base64Captcha.GenerateCaptcha(postParameters.Id, config)
-	base64blob := base64Captcha.CaptchaWriteToBase64Encoding(captcaInterfaceInstance)
-
+	c := base64Captcha.NewCaptcha(postParameters.DriverDigit, store)
 	//or you can just write the captcha content to the httpResponseWriter.
 	//before you put the captchaId into the response COOKIE.
 	//captcaInterfaceInstance.WriteTo(w)
 
 	//set json response
-	body := map[string]interface{}{"code": 1, "data": base64blob, "captchaId": captchaId, "msg": "success"}
-	return e.JSON(200, body)
+	id, b64s, err := c.Generate()
+
+	res := handler.ResponseStruct{
+		Code: 1,
+		Data: struct {
+			Id   string `json:"id"`
+			Data string `json:"data"`
+		}{
+			id,
+			b64s,
+		},
+		Message: "success",
+	}
+	if err != nil {
+		res.Code = 0
+		res.Data = nil
+		res.Message = err.Error()
+	}
+	return handler.Response(e, res)
 }
 
 // base64Captcha verify http handler
@@ -84,17 +122,15 @@ func captchaVerifyHandle(ctx echo.Context) error {
 
 	//parse request parameters
 	//接收客户端发送来的请求参数
-	decoder := json.NewDecoder(ctx.Request().Body)
 	var postParameters ConfigJsonBody
-	err := decoder.Decode(&postParameters)
+	err := ctx.Bind(&postParameters)
 	if err != nil {
-		logrus.Error(err)
+		return err
 	}
-	defer ctx.Request().Body.Close()
 	//verify the captcha
 	//比较图像验证码
-	verifyResult := base64Captcha.VerifyCaptcha(postParameters.Id, postParameters.VerifyValue)
 
+	verifyResult := store.Verify(postParameters.Id, postParameters.VerifyValue, false)
 	//set json response
 	//设置json响应
 	res := handler.ResponseStruct{
@@ -107,5 +143,5 @@ func captchaVerifyHandle(ctx echo.Context) error {
 		res.Data = "验证通过"
 		res.Message = "captcha verified"
 	}
-	return ctx.JSON(200, res)
+	return handler.Response(ctx, res)
 }

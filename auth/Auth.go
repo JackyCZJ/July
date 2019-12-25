@@ -8,8 +8,8 @@ import (
 	cacheClient "github.com/jackyczj/July/cache"
 
 	"github.com/jackyczj/July/handler/user"
+	"github.com/jackyczj/July/log"
 	"github.com/labstack/echo/v4"
-	"github.com/sirupsen/logrus"
 	"github.com/spf13/viper"
 )
 
@@ -20,8 +20,9 @@ func Skipper(c echo.Context) bool {
 	// 先处理非GET方法，除了登录，现实中还可能有一些 webhooks
 	switch path {
 	case
-		"/login",
-		"/register":
+		"/user/login",
+		"/user/register",
+		"/captcha":
 		return true
 	}
 	// 从这里开始必须是GET方法
@@ -46,7 +47,7 @@ func Skipper(c echo.Context) bool {
 // Validator 校验token是否合法，顺便根据token在 context中赋值 user id
 func Validator(token string, c echo.Context) (bool, error) {
 	// 调试后门
-	logrus.Debug("token:", token)
+	log.Logworker.SugaredLogger.Debug("token:", token)
 	if viper.GetString("runmode") == "debug" {
 		c.Set("user_id", 1)
 		return true, nil

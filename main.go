@@ -63,7 +63,7 @@ func main() {
 			}
 		}()
 		cacheClient.InitCache()
-		_, err := cacheClient.Cluster.Ping().Result()
+		_, err := cacheClient.Client.Ping().Result()
 		if err != nil {
 			panic(err)
 		}

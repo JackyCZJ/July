@@ -30,7 +30,9 @@ require (
 	github.com/go-mgo/mgo v0.0.0-20180705113738-7446a0344b78
 	github.com/go-playground/locales v0.13.0 // indirect
 	github.com/go-redis/cache v6.4.0+incompatible
+	github.com/go-redis/cache/v7 v7.0.2
 	github.com/go-redis/redis v6.15.5+incompatible
+	github.com/go-redis/redis/v7 v7.0.0-beta.4
 	github.com/gogo/protobuf v1.3.1 // indirect
 	github.com/golang/groupcache v0.0.0-20191002201903-404acd9df4cc // indirect
 	github.com/google/pprof v0.0.0-20191022163618-5260658b92d7 // indirect
@@ -80,6 +82,7 @@ require (
 	github.com/urfave/cli v1.22.1 // indirect
 	github.com/valyala/fasttemplate v1.1.0 // indirect
 	github.com/vmihailenco/msgpack v4.0.4+incompatible
+	github.com/vmihailenco/msgpack/v4 v4.2.0
 	github.com/xtaci/kcp-go v5.4.11+incompatible // indirect
 	go.etcd.io/etcd v3.3.17+incompatible // indirect
 	go.mongodb.org/mongo-driver v1.2.0

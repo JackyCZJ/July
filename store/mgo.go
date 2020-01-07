@@ -11,7 +11,8 @@ import (
 )
 
 type Mgo struct {
-	db *mongo.Database
+	db     *mongo.Database
+	client *mongo.Client
 }
 
 var Client Mgo
@@ -44,9 +45,12 @@ func openClient(url string) *mongo.Client {
 }
 
 func (m *Mgo) Init() {
-	Client = Mgo{
-		db: InitDB(),
-	}
+	viper.SetDefault("mgo.database", "July")
+	viper.SetDefault("mgo.url", "mongodb://mongo1:27017,mongo2:27018,mongo3:27019/?replicaSet=rs0")
+	database := viper.GetString("mgo.database")
+	m.client = openClient(viper.GetString("mgo.url"))
+	m.db = m.client.Database(database)
+	Client = *m
 }
 
 func (m *Mgo) Close() {

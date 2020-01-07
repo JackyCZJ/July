@@ -25,6 +25,6 @@ redis:
     - ":8005"
     - ":8006"
   docker_cluster:
-    - "redis1:8001"
-    - "redis2:8002"
-    - "redis3:8003"
+      redis1: :8001
+      redis2: :8002
+      redis3: :8003

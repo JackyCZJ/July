@@ -47,7 +47,7 @@ func Skipper(c echo.Context) bool {
 // Validator 校验token是否合法，顺便根据token在 context中赋值 user id
 func Validator(token string, c echo.Context) (bool, error) {
 	// 调试后门
-	log.Logworker.SugaredLogger.Debug("token:", token)
+	log.Logworker.Debug("token:", token)
 	if viper.GetString("runmode") == "debug" {
 		c.Set("user_id", 1)
 		return true, nil

@@ -29,7 +29,7 @@ func TestUserInformation_Create(t *testing.T) {
 	}
 }
 
-func TestUserModel_GetUser(t *testing.T) {
+func TestUserInformation_GetUser(t *testing.T) {
 	Um := UserInformation{
 		Username: "JackyTest",
 	}
@@ -40,16 +40,19 @@ func TestUserModel_GetUser(t *testing.T) {
 	fmt.Println(u)
 }
 
-func TestUserInformation_GetId(t *testing.T) {
-
+func TestUserInformation_Set(t *testing.T) {
 	Um := UserInformation{
 		Username: "JackyTest",
 	}
-	u, err := Um.GetId()
+	err := Um.Set("email", "test@test")
 	if err != nil {
 		t.Fatal(err)
 	}
-	t.Log(u)
+	u, err := Um.GetUser()
+	if err != nil {
+		t.Fatal(err)
+	}
+	fmt.Println(u)
 }
 
 func TestUserInformation_del(t *testing.T) {

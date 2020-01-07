@@ -2,14 +2,16 @@ package store
 
 import (
 	"context"
-	"encoding/json"
 	"fmt"
 	"sync"
 	"time"
 
-	"github.com/rs/xid"
+	"github.com/jackyczj/July/log"
+	"go.mongodb.org/mongo-driver/mongo"
+	"go.mongodb.org/mongo-driver/x/bsonx"
 
-	"github.com/go-redis/cache"
+	"github.com/go-redis/cache/v7"
+	"github.com/rs/xid"
 
 	cacheClient "github.com/jackyczj/July/cache"
 
@@ -19,18 +21,25 @@ import (
 
 	"github.com/jackyczj/July/pkg/auth"
 	"go.mongodb.org/mongo-driver/bson"
-	bson2 "gopkg.in/mgo.v2/bson"
 )
 
 type UserInformation struct {
-	Id       string `json:"id,omitempty"`
-	Username string `json:"username" validate:"min=1,max=32"`
-	Password string `json:"password,omitempty" validate:"min=1,max=32"`
-	Email    string `json:"email,omitempty"`
-	Role     int    `json:"role,omitempty"`
-	Gander   int    `json:"gander,omitempty"`
-	Phone    string `json:"phone,omitempty"`
-	sync.RWMutex
+	Id           string    `json:"id,omitempty" bson:"id,omitempty"`
+	Username     string    `json:"username" validate:"min=1,max=32" bson:"username,omitempty"`
+	Password     string    `json:"password,omitempty" validate:"min=1,max=32" bson:"password,omitempty"`
+	Email        string    `json:"email,omitempty"  bson:"email,omitempty"`
+	Role         int       `json:"role,omitempty" bson:"role,omitempty"`
+	Gander       int       `json:"gander,omitempty" bson:"gander,omitempty"`
+	Addresses    []Address `json:"addresses,omitempty" bson:"addresses,omitempty"`
+	sync.RWMutex `bson:"-"`
+}
+
+type Address struct {
+	Name     string `json:"name"`
+	Addr     string `json:"addr"`
+	Phone    string `json:"phone"`
+	Postal   string `json:"postal"`
+	Province string `json:"province"`
 }
 
 func (u *UserInformation) Create() error {
@@ -40,6 +49,14 @@ func (u *UserInformation) Create() error {
 	u.Password, err = auth.Encrypt(u.Password)
 	if err != nil {
 		return err
+	}
+	_, err = Client.db.Collection("user").Indexes().CreateOne(context.TODO(),
+		mongo.IndexModel{
+			Keys:    bsonx.Doc{{Key: "username", Value: bsonx.String("")}},
+			Options: options.Index().SetUnique(true),
+		})
+	if err != nil {
+		log.Logworker.Error(err.Error())
 	}
 	ctx, cancel := context.WithTimeout(context.TODO(), 3*time.Second)
 	defer cancel()
@@ -65,47 +82,16 @@ func (u *UserInformation) GetUser() (*UserInformation, error) {
 	case cache.ErrCacheMiss:
 	}
 
-	m := make(bson.M)
-	d, err := json.Marshal(u)
+	m, err := utils.StructToBson(u)
 	if err != nil {
 		return nil, err
 	}
-	err = bson2.UnmarshalJSON(d, &m)
-	if err != nil {
-		return nil, err
-	}
-	ctx := context.TODO()
-	ctx, cancel := context.WithTimeout(ctx, 1*time.Second)
-	defer cancel()
-	err = Client.db.Collection("user").FindOne(ctx, m).Decode(&u)
+	err = Client.db.Collection("user").FindOne(context.TODO(), m).Decode(&u)
 	if err != nil {
 		return nil, err
 	}
 	cacheClient.SetCc("user."+u.Username, u, time.Hour*24)
 	return u, nil
-}
-
-func (u *UserInformation) GetId() (string, error) {
-	u.RLock()
-	defer u.RUnlock()
-	ctx := context.Background()
-	ctx, cancel := context.WithTimeout(ctx, 1*time.Second)
-	defer cancel()
-	m, err := utils.JsonToBson(u)
-	if err != nil {
-		return "", err
-	}
-	result := Client.db.Collection("user").FindOne(ctx, m)
-	if result.Err() != nil {
-		return "", err
-	}
-	s, err := result.DecodeBytes()
-	if err != nil {
-		return "", err
-	}
-	id := s.Lookup("Id").String()
-
-	return id, nil
 }
 
 func (u *UserInformation) Delete() error {
@@ -114,36 +100,35 @@ func (u *UserInformation) Delete() error {
 	ctx := context.Background()
 	ctx, cancel := context.WithTimeout(ctx, 1*time.Second)
 	defer cancel()
-	m, err := utils.JsonToBson(u)
+	m, err := utils.StructToBson(u)
 	if err != nil {
 		return err
 	}
-	result := Client.db.Collection("user").FindOneAndDelete(ctx, m)
-	if result.Err() != nil {
+	result, err := Client.db.Collection("user").DeleteOne(ctx, m)
+	if err != nil {
 		return err
+	}
+	if result.DeletedCount == 0 {
+		return fmt.Errorf("Delete Faild ")
 	}
 	cacheClient.DelCc("user." + u.Username)
 	return nil
 }
 
-func (u *UserInformation) Set() error {
+func (u *UserInformation) Set(filed string, value interface{}) error {
 	u.Lock()
 	defer u.Unlock()
-	ctx := context.Background()
-	ctx, cancel := context.WithTimeout(ctx, 1*time.Second)
-	defer cancel()
-	m, err := utils.JsonToBson(u)
 	if err != nil {
 		return err
 	}
 	op := options.FindOneAndUpdate()
 	op.SetProjection(bson.D{{Key: "id", Value: u.Id}})
-
-	result := Client.db.Collection("user").FindOneAndUpdate(ctx, u, m)
+	update := bson.D{{Key: "$set", Value: bson.D{{Key: filed, Value: value}}}}
+	result := Client.db.Collection("user").FindOneAndUpdate(context.TODO(), u, update)
 	if result.Err() != nil {
 		return result.Err()
 	}
-	err = Client.db.Collection("user").FindOne(ctx, m).Decode(&u)
+	err = Client.db.Collection("user").FindOne(context.TODO(), u).Decode(&u)
 	if err != nil {
 		return err
 	}

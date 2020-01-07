@@ -17,7 +17,7 @@ func init() {
 
 func TestCache_Test(t *testing.T) {
 	InitCache()
-	s, err := Cluster.Ping().Result()
+	s, err := Client.Ping().Result()
 	if err != nil {
 		t.Fatal(err)
 	}

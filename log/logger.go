@@ -10,7 +10,7 @@ import (
 	"gopkg.in/natefinch/lumberjack.v2"
 )
 
-var Logworker *ZapLogger
+var Logworker *zap.SugaredLogger
 
 func NewZapLogger(opts ...Option) *ZapLogger {
 	zapLogger := &ZapLogger{
@@ -40,11 +40,12 @@ func NewZapLogger(opts ...Option) *ZapLogger {
 
 		logger := zap.New(core, zap.AddCaller())
 		zapLogger.SugaredLogger = logger.Sugar()
+		Logworker = logger.Sugar()
 	} else {
 		zapLogger.SugaredLogger = zapLogger.Options.Logger
+		Logworker = zapLogger.Options.Logger
 	}
 
-	Logworker = zapLogger
 	return zapLogger
 }
 

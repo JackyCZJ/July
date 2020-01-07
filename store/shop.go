@@ -17,13 +17,13 @@ import (
 
 type Shop struct {
 	Name         string    `json:"name" bson:"name"`
-	Owner        string    `json:"owner" bson:"owner"`
-	Description  string    `json:"description" bson:"description"`
-	IsClose      bool      `json:"is_close" bson:"is_close"`
-	CreateAt     time.Time `json:"create_at" bson:"create_at"`
-	CloseAt      time.Time `json:"close_at" bson:"close_at"`
+	Owner        string    `json:"owner" bson:"owner,omitempty"`
+	Description  string    `json:"description" bson:"description,omitempty"`
+	IsClose      bool      `json:"is_close" bson:"is_close,omitempty"`
+	CreateAt     time.Time `json:"create_at" bson:"create_at,omitempty"`
+	CloseAt      time.Time `json:"close_at" bson:"close_at,omitempty"`
 	sync.RWMutex `bson:"-"`
-	IsDelete     bool `json:"is_delete" bson:"is_delete"`
+	IsDelete     bool `json:"is_delete" bson:"is_delete,omitempty"`
 }
 
 func (s *Shop) Create() error {

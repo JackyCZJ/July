@@ -13,15 +13,26 @@ import (
 	"github.com/jackyczj/July/cache"
 )
 
+/*
+	OrderNo 	订单号
+	Seller  	卖家
+	Buyer		卖家
+	Payment 	价格
+	PaymentType 支付方式
+	ShippingTo	邮寄地址
+	IsClose		订单是否已关闭
+	CreateAt 	订单创建时间
+
+*/
 type Order struct {
-	OrderNo      string    `json:"OrderNo"`
-	Seller       string    `json:"seller"`
-	Buyer        string    `json:"buyer"`
-	Payment      int32     `json:"payment"`
-	PaymentType  int       `json:"payment_type"`
-	ShippingTo   Address   `json:"shipping_to" bson:"shipping_to"`
-	Item         []string  `json:"item"`
-	CreateTime   time.Time `json:"create_time"`
+	OrderNo      string    `json:"OrderNo" bson:"OrderNo"`
+	Seller       string    `json:"seller" bson:"seller,omitempty"`
+	Buyer        string    `json:"buyer" bson:"buyer"`
+	Payment      int32     `json:"payment" bson:"payment" `
+	PaymentType  int       `json:"payment_type" bson:"payment_type,omitempty" `
+	ShippingTo   Address   `json:"shipping_to" bson:"shipping_to,omitempty"`
+	Item         []Product `json:"item" bson:"item,omitempty"`
+	CreateTime   time.Time `json:"create_time" bson:"create_time"`
 	IsClose      bool      `json:"is_close"`
 	EndTime      time.Time `json:"end_time"`
 	SendTime     time.Time `json:"send_time"`
@@ -30,6 +41,7 @@ type Order struct {
 
 var err error
 
+//订单创建
 func (o *Order) Create() error {
 	o.Lock()
 	defer o.Unlock()
@@ -43,6 +55,7 @@ func (o *Order) Create() error {
 	return nil
 }
 
+//订单删除
 func (o *Order) Delete() error {
 	o.Lock()
 	defer o.Unlock()
@@ -60,6 +73,7 @@ func (o *Order) Delete() error {
 	return nil
 }
 
+//订单修改
 func (o *Order) Update(filed string, value interface{}) error {
 	o.Lock()
 	defer o.Unlock()

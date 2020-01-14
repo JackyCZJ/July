@@ -1,6 +1,7 @@
 # July
 An api server,base on echo . With mongodb store and cache with redis.
 
+我的毕业设计，想的很丰满现实很骨感的破实现。目前还在整后端，前端有点难受。
 
 thanks to [yowko](https://github.com/yowko/Docker-Compose-MongoDB-Replica-Set) 's docker-compose
 
@@ -19,3 +20,23 @@ make all      #fmt , test , and build
 
 ./july      #run
 ```
+
+## TODO
+
+### Buyer-server
+- [ ] 商品浏览
+- [ ] 商品搜索
+- [x] 用户登陆注册
+- [ ] 购物车增删改查
+- [ ] 下单购买
+
+### Seller-server
+- [ ] 商家登录
+- [ ] 商品上架
+- [ ] 订单管理
+- [ ] 商品发货
+Admin-server
+### 
+- [ ] 管理员登陆
+- [ ] 商家审核
+- [ ] 商家封禁

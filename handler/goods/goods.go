@@ -2,18 +2,15 @@ package goods
 
 import "github.com/labstack/echo/v4"
 
-type Product struct {
-	Name  string `json:"name"`
-	Type  Type   `json:"type"`
-	Price int    `json:"price"`
-	Off   int    `json:"off"`
-	Owner string `json:"owner"`
-}
-
-type Type struct {
-	Category string `json:"category"` //产品分类
-	Brand    string `json:"brand"`    //产品品牌
-}
+/*
+	商品名
+	商品类别
+	商品库存
+	商品价格
+	商品折扣
+	商品图片
+	商品介绍
+*/
 
 func Search(ctx echo.Context) error {
 	return nil

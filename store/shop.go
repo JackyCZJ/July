@@ -26,6 +26,7 @@ type Shop struct {
 	IsDelete     bool `json:"is_delete" bson:"is_delete,omitempty"`
 }
 
+//创建一家店铺的存储方法
 func (s *Shop) Create() error {
 	s.Lock()
 	defer s.Unlock()
@@ -47,6 +48,7 @@ func (s *Shop) Create() error {
 	})
 }
 
+//删除一家店铺
 func (s *Shop) Delete() error {
 	s.Lock()
 	defer s.Unlock()
@@ -70,6 +72,7 @@ func (s *Shop) Delete() error {
 	})
 }
 
+//修改店铺信息
 func (s *Shop) Set(filed string, value interface{}) error {
 	s.Lock()
 	defer s.Unlock()

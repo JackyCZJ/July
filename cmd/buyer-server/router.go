@@ -46,7 +46,7 @@ func Load(e *echo.Echo) {
 	}
 
 	//Todo: ⬇️
-	api := e.Group("/api/v1/")
+	api := e.Group("/api/v1")
 
 	//Goods := api.Group("/Goods")
 	//{
@@ -57,16 +57,16 @@ func Load(e *echo.Echo) {
 	cart := api.Group("/cart")
 	{
 		cart.GET("/", cartHandler.List)
-		cart.PUT("/", cartHandler.Add)
+		cart.POST("/", cartHandler.Add)
 		cart.DELETE("/:id", cartHandler.Delete)
 		cart.DELETE("/", cartHandler.Delete)
 	}
 
-	shop := api.Group("/shop")
+	shopping := api.Group("/shop")
 	{
-		shopping := shop.Group("/shop/:id")
 		shopping.GET("", shopHandler.List)
-		shopping.PUT("/:id", shopHandler.Add)
+		shopping.POST("/:id", shopHandler.Add)
 		shopping.DELETE("/:id", shopHandler.Delete)
 	}
+
 }

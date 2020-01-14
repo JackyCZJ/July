@@ -1,8 +1,8 @@
-all:gotool
-	go build .
+
+all:gotool build
 
 build:
-	go build .
+	go build -o july ./cmd/services
 
 clean:
 	rm july

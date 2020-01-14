@@ -24,7 +24,7 @@ import (
 )
 
 type UserInformation struct {
-	Id           string    `json:"id,omitempty" bson:"id,omitempty"`
+	Id           uint16    `json:"id,omitempty" bson:"id,omitempty"`
 	Username     string    `json:"username" validate:"min=1,max=32" bson:"username,omitempty"`
 	Password     string    `json:"password,omitempty" validate:"min=1,max=32" bson:"password,omitempty"`
 	Email        string    `json:"email,omitempty"  bson:"email,omitempty"`
@@ -42,6 +42,7 @@ type Address struct {
 	Province string `json:"province"`
 }
 
+//创建用户
 func (u *UserInformation) Create() error {
 	u.Lock()
 	defer u.Unlock()
@@ -60,8 +61,16 @@ func (u *UserInformation) Create() error {
 	}
 	ctx, cancel := context.WithTimeout(context.TODO(), 3*time.Second)
 	defer cancel()
-	u.Id = xid.New().String()
+	u.Id = xid.New().Pid()
 	_, err = Client.db.Collection("user").InsertOne(ctx, u)
+	if err != nil {
+		return err
+	}
+	var cart Cart
+	cart.Owner = u.Id
+	cart.CreateAt = time.Now()
+	cart.UpdateAt = cart.CreateAt
+	_, err = Client.db.Collection("cart").InsertOne(ctx, cart)
 	if err != nil {
 		return err
 	}
@@ -70,6 +79,7 @@ func (u *UserInformation) Create() error {
 	return nil
 }
 
+//获取用户信息
 func (u *UserInformation) GetUser() (*UserInformation, error) {
 	u.RLock()
 	defer u.RUnlock()
@@ -94,6 +104,7 @@ func (u *UserInformation) GetUser() (*UserInformation, error) {
 	return u, nil
 }
 
+//删除一位用户
 func (u *UserInformation) Delete() error {
 	u.Lock()
 	defer u.Unlock()
@@ -115,6 +126,7 @@ func (u *UserInformation) Delete() error {
 	return nil
 }
 
+//修改用户信息
 func (u *UserInformation) Set(filed string, value interface{}) error {
 	u.Lock()
 	defer u.Unlock()

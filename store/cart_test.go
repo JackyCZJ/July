@@ -9,6 +9,7 @@ func TestCartAdd(t *testing.T) {
 	type args struct {
 		id      uint16
 		product Product
+		count   int
 	}
 	var tests []struct {
 		name    string
@@ -21,10 +22,11 @@ func TestCartAdd(t *testing.T) {
 		wantErr bool
 	}{
 		name: "test1", args: args{
-			id: 47192,
+			id: 32519,
 			product: Product{
-				Name:     "wtfww",
-				ImageUri: "http://wtf.img",
+				ProductId: 123123,
+				Name:      "wtfww",
+				ImageUri:  "http://wtf.img",
 				Information: Type{
 					Category: "wtf",
 					Brand:    "wtf",
@@ -35,10 +37,11 @@ func TestCartAdd(t *testing.T) {
 				CreateAt: time.Now(),
 				IsDelete: false,
 			},
+			count: 3,
 		}, wantErr: false})
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			if err := CartAdd(tt.args.id, tt.args.product); (err != nil) != tt.wantErr {
+			if err := CartAdd(tt.args.id, tt.args.product, tt.args.count); (err != nil) != tt.wantErr {
 				t.Errorf("CartAdd() error = %v, wantErr %v", err, tt.wantErr)
 			}
 		})
@@ -61,10 +64,11 @@ func TestCartDel(t *testing.T) {
 		wantErr bool
 	}{
 		name: "test1", args: args{
-			id: 47192,
+			id: 32519,
 			product: Product{
-				Name:     "wtfww",
-				ImageUri: "http://wtf.img",
+				ProductId: 123123,
+				Name:      "wtfww",
+				ImageUri:  "http://wtf.img",
 				Information: Type{
 					Category: "wtf",
 					Brand:    "wtf",

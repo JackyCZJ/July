@@ -3,7 +3,7 @@ package store
 import "time"
 
 type Product struct {
-	ProductId   string `json:"product_id" bson:"_id"`
+	ProductId   uint32 `json:"product_id" bson:"_id"`
 	Name        string `json:"name"`
 	ImageUri    string `json:"image_uri"`
 	Information Type   `json:"info"`

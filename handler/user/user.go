@@ -6,11 +6,11 @@ import (
 	"strconv"
 	"time"
 
+	"github.com/rs/xid"
+
 	"github.com/jackyczj/July/cache"
 
 	"github.com/jackyczj/July/handler"
-
-	uuid "github.com/satori/go.uuid"
 
 	"github.com/jackyczj/July/pkg/auth"
 	"github.com/jackyczj/July/store"
@@ -83,7 +83,7 @@ func Login(e echo.Context) error {
 	t := &Token{
 		Token:     utils.NewUUID(),
 		ExpiresAt: time.Now().Add(time.Hour * 76),
-		UserID:    u.Id,
+		UserID:    strconv.FormatUint(uint64(u.Id), 10),
 	}
 	cache.SetCc("token:"+t.Token, t, time.Hour*76)
 	return e.JSON(http.StatusOK, t)
@@ -124,7 +124,7 @@ func Register(e echo.Context) error {
 	user.Username = username
 	user.Email = email
 	user.Password, _ = auth.Encrypt(password)
-	user.Id = uuid.NewV1().String()
+	user.Id = xid.New().Pid()
 	user.Gander = gander
 
 	return nil
@@ -149,7 +149,7 @@ func isEmail(mail string) bool {
 func Get(e echo.Context) error {
 	id := e.Get("user_id")
 	u := new(store.UserInformation)
-	u.Id = id.(string)
+	u.Id = id.(uint16)
 	u, err := u.GetUser()
 	if err != nil {
 		return echo.NewHTTPError(401, "Get user information fail")
@@ -161,7 +161,7 @@ func Get(e echo.Context) error {
 func Set(e echo.Context) error {
 	id := e.Get("user_id")
 	u := new(store.UserInformation)
-	u.Id = id.(string)
+	u.Id = id.(uint16)
 	u, err := u.GetUser()
 	if err != nil {
 		return echo.NewHTTPError(401, "Edit user information fail.")

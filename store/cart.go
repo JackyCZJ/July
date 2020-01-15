@@ -15,8 +15,8 @@ import (
 )
 
 type item struct {
-	ProductId uint32
-	Count     int
+	ProductId uint32 `bson:"product_id"`
+	Count     int    `bson:"count,omitempty"`
 }
 
 type Cart struct {
@@ -26,7 +26,7 @@ type Cart struct {
 	UpdateAt time.Time `bson:"update_at,omitempty"`
 }
 
-func CartAdd(id uint16, product Product) error {
+func CartAdd(id uint16, product Product, count int) error {
 	var stash Cart
 	stash.Owner = id
 	filter, err := utils.StructToBson(stash)
@@ -37,6 +37,9 @@ func CartAdd(id uint16, product Product) error {
 		Keys:    bsonx.Doc{{Key: "owner", Value: bsonx.Int32(1)}},
 		Options: options.Index().SetUnique(true),
 	})
+	i := item{}
+	i.ProductId = product.ProductId
+	i.Count = count
 	if err != nil {
 		return err
 	}
@@ -44,7 +47,7 @@ func CartAdd(id uint16, product Product) error {
 		{
 			Key: "$push",
 			Value: bson.D{
-				{Key: "item", Value: product},
+				{Key: "item", Value: i},
 			},
 		},
 	}
@@ -65,13 +68,14 @@ func CartDel(id uint16, product ...Product) error {
 	if err != nil {
 		return err
 	}
+	var it item
 	for p := range product {
-		i, _ := utils.StructToBson(product[p])
+		it.ProductId = product[p].ProductId
 		update := bson.D{
 			{
 				Key: "$pull",
 				Value: bson.D{
-					{Key: "item", Value: i},
+					{Key: "item", Value: it},
 				},
 			},
 		}
@@ -79,7 +83,6 @@ func CartDel(id uint16, product ...Product) error {
 		if err != nil {
 			return err
 		}
-		fmt.Println(result.UpsertedID)
 		if result.MatchedCount == 0 {
 			return fmt.Errorf("Add Cart Error ")
 		}

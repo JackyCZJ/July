@@ -36,7 +36,6 @@ func Skipper(c echo.Context) bool {
 	switch resource {
 	case
 		// 公开信息，把需要公开的资源每个一行写这里
-		"goods",
 		"swagger",
 		"public":
 		return true

@@ -11,3 +11,12 @@ type ResponseStruct struct {
 func Response(ctx echo.Context, responseStruct ResponseStruct) error {
 	return ctx.JSON(200, responseStruct)
 }
+
+func ErrorResp(ctx echo.Context, err error) error {
+	res := ResponseStruct{
+		Code:    0,
+		Message: err.Error(),
+		Data:    nil,
+	}
+	return ctx.JSON(200, res)
+}

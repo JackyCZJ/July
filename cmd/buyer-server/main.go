@@ -18,7 +18,6 @@ import (
 	cacheClient "github.com/jackyczj/July/cache"
 	"github.com/jackyczj/July/store"
 	"github.com/labstack/echo/v4"
-	"github.com/labstack/echo/v4/middleware"
 )
 
 var (
@@ -55,7 +54,6 @@ func main() {
 		}
 	}()
 	defer store.Client.Close()
-	e.Use(middleware.CORS())
 	go func() {
 		defer func() {
 			if r := recover(); r != nil {

@@ -1,6 +1,10 @@
 package main
 
 import (
+	"net/http"
+
+	"github.com/jackyczj/July/handler/goods"
+
 	Auth "github.com/jackyczj/July/auth"
 	"github.com/jackyczj/July/handler/captcha"
 	cartHandler "github.com/jackyczj/July/handler/cart"
@@ -13,7 +17,7 @@ import (
 func Load(e *echo.Echo) {
 	e.Use(middleware.Logger())
 	e.Use(middleware.Recover())
-	//e.Use(middleware.CORS())
+	e.Use(middleware.CORS())
 	//c := middleware.CSRFConfig{
 	//	Skipper:      middleware.DefaultSkipper,
 	//	TokenLength:  32,
@@ -22,7 +26,11 @@ func Load(e *echo.Echo) {
 	//	CookieName:   "_csrf",
 	//	CookieMaxAge: 86400,
 	//}
-	//e.Use(middleware.CSRFWithConfig(c))
+	e.Use(middleware.CORSWithConfig(middleware.CORSConfig{
+		AllowOrigins: []string{"https://localhost:2333", "http://localhost:2333", "http://localhost:3000"},
+		AllowHeaders: []string{echo.HeaderOrigin, echo.HeaderContentType, echo.HeaderAccept},
+		AllowMethods: []string{http.MethodGet, http.MethodHead, http.MethodPut, http.MethodPatch, http.MethodPost, http.MethodDelete},
+	}))
 	e.Use(middleware.KeyAuthWithConfig(middleware.KeyAuthConfig{
 		Skipper:    Auth.Skipper,
 		Validator:  Auth.Validator,
@@ -35,6 +43,7 @@ func Load(e *echo.Echo) {
 	Account := e.Group("/user")
 	{
 		Account.POST("/login", user.Login)
+		Account.GET("/logout", user.Logout)
 		Account.POST("/register", user.Register)
 
 	}
@@ -48,11 +57,11 @@ func Load(e *echo.Echo) {
 	//Todo: ⬇️
 	api := e.Group("/api/v1")
 
-	//Goods := api.Group("/Goods")
-	//{
-	//Goods.GET("/Goods/:str",goodsHandler.Search) //search
-	//Goods.GET("/Goods/index",goodsHandler.Index) //index goods list
-	//}
+	Goods := api.Group("/Goods")
+	{
+		//Goods.GET("/Goods/:str",goodsHandler.Search) //search
+		Goods.GET("/index", goods.Index) //index goods list
+	}
 
 	cart := api.Group("/cart")
 	{

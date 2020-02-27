@@ -55,6 +55,9 @@ Temporary Items
 *.iml
 
 ### Project-Specific
+admin
+buyer
+seller
 
 coverage.out
 

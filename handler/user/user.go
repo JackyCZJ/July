@@ -1,6 +1,7 @@
 package user
 
 import (
+	"fmt"
 	"net/http"
 	"regexp"
 	"strconv"
@@ -39,10 +40,13 @@ func init() {
 }
 
 func Login(e echo.Context) error {
-	username := e.FormValue("username")
-	password := e.FormValue("password")
+	lm := new(LoginModel)
+	err := e.Bind(&lm)
+	if err != nil {
+		return echo.NewHTTPError(401, "AuthFailed,username or password can't be empty")
+	}
 
-	if username == "" || password == "" {
+	if lm.Username == "" || lm.Password == "" {
 		return echo.NewHTTPError(401, "AuthFailed,username or password can't be empty")
 	}
 	token := jwt.New(jwt.SigningMethodHS256)
@@ -54,24 +58,24 @@ func Login(e echo.Context) error {
 	//		Phone: username,
 	//	}
 	//} else
-	if isEmail(username) {
+	if isEmail(lm.Username) {
 		s = store.UserInformation{
-			Email: username,
+			Email: lm.Username,
 		}
 	} else {
 		s = store.UserInformation{
-			Username: username,
+			Username: lm.Username,
 		}
 	}
 	u, err := s.GetUser()
 	if err != nil {
 		return echo.NewHTTPError(401, "AuthFailed,username not found.")
 	}
-	if a := auth.Compare(u.Password, password); a != nil {
+	if a := auth.Compare(u.Password, lm.Password); a != nil {
 		return echo.NewHTTPError(401, "AuthFailed,password incorrect.")
 	}
 
-	claims["name"] = username
+	claims["name"] = lm.Username
 
 	claims["exp"] = time.Now().Add(time.Hour * 72).Unix()
 
@@ -90,11 +94,11 @@ func Login(e echo.Context) error {
 
 }
 
-//
-//func Logout(e echo.Context) error {
-//	return e.JSON(http.StatusOK)
-//
-//}
+func Logout(e echo.Context) error {
+	id := e.Get("user_id")
+	fmt.Println(id)
+	return e.JSON(http.StatusOK, nil)
+}
 
 func Register(e echo.Context) error {
 

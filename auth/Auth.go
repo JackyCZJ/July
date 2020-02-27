@@ -55,6 +55,7 @@ func Validator(token string, c echo.Context) (bool, error) {
 	var t = new(user.Token)
 	err := cacheClient.GetCc("token:"+token, t)
 	if err == cache.ErrCacheMiss {
+		print(t)
 		return false, nil
 	} else if err != nil {
 		return false, err

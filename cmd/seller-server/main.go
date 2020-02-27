@@ -9,11 +9,9 @@ import (
 	"github.com/jackyczj/July/log"
 	"github.com/jackyczj/July/store"
 	"github.com/labstack/echo/v4"
-	"github.com/labstack/echo/v4/middleware"
 	"github.com/spf13/pflag"
 	"github.com/spf13/viper"
 	"go.mongodb.org/mongo-driver/mongo/readpref"
-	"golang.org/x/crypto/acme/autocert"
 )
 
 var (
@@ -50,7 +48,7 @@ func main() {
 		}
 	}()
 	defer store.Client.Close()
-	e.Use(middleware.CORS())
+	//e.Use(middleware.CORS())
 	go func() {
 		defer func() {
 			if r := recover(); r != nil {
@@ -63,9 +61,9 @@ func main() {
 			panic(err)
 		}
 	}()
-	go func(e *echo.Echo) {
-		e.AutoTLSManager.Cache = autocert.DirCache("/conf")
-		e.Logger.Fatal("TLS service start at port:", e.StartAutoTLS(":443"))
-	}(e)
-	e.Logger.Fatal("Service start at port:", e.Start(":2333"))
+	//go func(e *echo.Echo) {
+	//	e.AutoTLSManager.Cache = autocert.DirCache("/conf")
+	//	e.Logger.Fatal("TLS service start at port:", e.StartAutoTLS(":443"))
+	//}(e)
+	e.Logger.Fatal("Service start at port:", e.Start(":2334"))
 }

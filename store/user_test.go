@@ -20,8 +20,9 @@ func init() {
 }
 func TestUserInformation_Create(t *testing.T) {
 	ui := UserInformation{
-		Username: "JackyTest",
+		Username: "JackyTest2",
 		Password: "wtfIsPassword",
+		Role:     2,
 	}
 	err := ui.Create()
 	if err != nil {

@@ -6,24 +6,31 @@ import (
 	"sync"
 	"time"
 
+	"go.mongodb.org/mongo-driver/bson/primitive"
+
+	"go.mongodb.org/mongo-driver/x/bsonx"
+
+	"github.com/rs/xid"
+
 	"github.com/jackyczj/July/utils"
 
 	"go.mongodb.org/mongo-driver/bson"
 	"go.mongodb.org/mongo-driver/mongo"
 	"go.mongodb.org/mongo-driver/mongo/options"
-	"go.mongodb.org/mongo-driver/x/bsonx"
 )
 
 type Product struct {
-	ProductId    uint16    `json:"product_id" bson:"_id"`
-	Name         string    `json:"name" bson:"name,omitempty"`
-	ImageUri     string    `json:"image_uri" bson:"image_uri,omitempty"`
-	Information  Type      `json:"info" bson:"info,omitempty"`
-	Price        int       `json:"price" bson:"price,omitempty"`
-	Off          int       `json:"off" bson:"off,omitempty"`
-	Owner        string    `json:"owner" bson:"owner,omitempty"`
-	CreateAt     time.Time `json:"create_at" bson:"create_at,omitempty"`
-	IsDelete     bool      `json:"is_delete" bson:"is_delete,omitempty"`
+	ProductId    uint16    `json:"product_id" bson:"_id"`                    //商品id
+	Name         string    `json:"name" bson:"name,omitempty"`               //商品名
+	ImageUri     string    `json:"image_uri" bson:"image_uri,omitempty"`     //商品图片url
+	Description  string    `json:"description" bson:"description,omitempty"` //商品介绍
+	Information  Type      `json:"info" bson:"info,omitempty"`               //品牌
+	Price        int       `json:"price" bson:"price,omitempty"`             //价格
+	Off          int       `json:"off" bson:"off,omitempty"`                 //折扣
+	Owner        string    `json:"owner" bson:"owner,omitempty"`             //拥有者
+	CreateAt     time.Time `json:"create_at" bson:"create_at,omitempty"`     //创建时间
+	Shelves      bool      `json:"shelves" bson:"shelves,omitempty"`         //是否上架
+	IsDelete     bool      `json:"is_delete" bson:"is_delete,omitempty"`     //是否已删除
 	sync.RWMutex `bson:"_"`
 }
 
@@ -35,17 +42,19 @@ type Type struct {
 func (p *Product) Add() error {
 	p.Lock()
 	defer p.Unlock()
+
 	_, err = Client.db.Collection("good").Indexes().CreateOne(context.TODO(), mongo.IndexModel{
-		Keys:    bsonx.Doc{{Key: "product_id", Value: bsonx.Int32(0)}},
+		Keys:    bsonx.Doc{{Key: "_id", Value: bsonx.Int32(0)}},
 		Options: options.Index().SetUnique(true),
 	})
-
+	p.ProductId = xid.New().Pid()
 	return Client.client.UseSession(context.TODO(), func(sessionContext mongo.SessionContext) error {
 		if err = sessionContext.StartTransaction(); err != nil {
 			return err
 		}
 		_, err = Client.db.Collection("good").InsertOne(sessionContext, p)
 		if err != nil {
+			fmt.Println(err)
 			return sessionContext.AbortTransaction(sessionContext)
 		} else {
 			return sessionContext.CommitTransaction(sessionContext)
@@ -129,4 +138,75 @@ func (p *Product) Update() error {
 		}
 		return sessionContext.CommitTransaction(sessionContext)
 	})
+}
+
+func GetRandom() ([]Product, error) {
+	var pList []Product
+	result, err := Client.db.Collection("good").Aggregate(context.Background(),
+		mongo.Pipeline{
+			bson.D{{"$match", bson.D{
+				{"shelves",
+					bson.D{
+						{"$eq", true},
+					}},
+			}}},
+			bson.D{
+				{
+					"$sample",
+					bson.D{
+						{"size", 10},
+					},
+				},
+			},
+		})
+	if err != nil {
+		return nil, err
+	}
+
+	for result.Next(context.TODO()) {
+		var res Product
+		_ = result.Decode(&res)
+		pList = append(pList, res)
+	}
+
+	return pList, nil
+}
+
+func Search(key string, pageNumber int, PerPage int) ([]Product, error) {
+	var pList []Product
+	filter := bson.D{
+		{Key: "$and",
+			Value: bson.A{
+				bson.D{{Key: "name", Value: primitive.Regex{Pattern: key, Options: ""}}},
+				bson.D{{Key: "shelves", Value: bson.D{{"$ne", false}}}},
+			},
+		},
+	}
+	opt := options.FindOptions{}
+	var page int
+	if pageNumber > 0 {
+		page = (pageNumber - 1) * PerPage
+	} else {
+		page = 0
+	}
+	opt.SetSkip(int64(page))
+	opt.SetLimit(int64(PerPage))
+	result, err := Client.db.Collection("good").Find(context.TODO(), filter, &opt)
+	if err != nil {
+		return nil, err
+	}
+	for result.Next(context.TODO()) {
+		var p Product
+		err := result.Decode(&p)
+		if err != nil {
+			return nil, err
+		}
+		pList = append(pList, p)
+	}
+	return pList, nil
+
+}
+
+func SearchItself() {
+
 }

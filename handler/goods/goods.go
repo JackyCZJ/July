@@ -24,11 +24,42 @@ import (
 */
 
 func Search(ctx echo.Context) error {
-	return nil
+	key := ctx.Param("key")
+	page := ctx.Param("page")
+	perPage := ctx.Param("count")
+	pg, err := strconv.Atoi(page)
+	if err != nil {
+		return ctx.JSON(403, err.Error())
+	}
+	pr, err := strconv.Atoi(perPage)
+	if err != nil {
+		return ctx.JSON(403, err.Error())
+	}
+	data, err := store.Search(key, pg, pr)
+	if err != nil {
+		return handler.Response(ctx, handler.ResponseStruct{
+			Code:    0,
+			Message: "",
+			Data:    data,
+		})
+	}
+
+	return ctx.JSON(200, data)
 }
 
 func Index(ctx echo.Context) error {
-	return nil
+	//var goodsList []store.Product
+	data, err := store.GetRandom()
+	if err != nil {
+		fmt.Println(err.Error())
+		return ctx.JSON(200, nil)
+	}
+	fmt.Println(data)
+	return handler.Response(ctx, handler.ResponseStruct{
+		Code:    0,
+		Message: "",
+		Data:    data,
+	})
 }
 
 func Get(ctx echo.Context) error {

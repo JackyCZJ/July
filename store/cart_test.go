@@ -24,7 +24,7 @@ func TestCartAdd(t *testing.T) {
 		name: "test1", args: args{
 			id: 32519,
 			product: Product{
-				ProductId: 123123,
+				ProductId: 1231,
 				Name:      "wtfww",
 				ImageUri:  "http://wtf.img",
 				Information: Type{
@@ -66,7 +66,7 @@ func TestCartDel(t *testing.T) {
 		name: "test1", args: args{
 			id: 32519,
 			product: Product{
-				ProductId: 123123,
+				ProductId: 1231,
 				Name:      "wtfww",
 				ImageUri:  "http://wtf.img",
 				Information: Type{

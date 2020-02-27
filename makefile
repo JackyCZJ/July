@@ -2,7 +2,9 @@
 all:gotool build
 
 build:
-	go build -o july ./cmd/services
+	go build -o buyer ./cmd/buyer-server
+	go build -o admin ./cmd/admin-server
+	go build -o seller ./cmd/seller-server
 
 clean:
 	rm july

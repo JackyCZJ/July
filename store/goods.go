@@ -31,7 +31,7 @@ type Product struct {
 	CreateAt     time.Time `json:"create_at" bson:"create_at,omitempty"`     //创建时间
 	Shelves      bool      `json:"shelves" bson:"shelves,omitempty"`         //是否上架
 	IsDelete     bool      `json:"is_delete" bson:"is_delete,omitempty"`     //是否已删除
-	sync.RWMutex `bson:"_"`
+	sync.RWMutex `json:"_" bson:"_"`
 }
 
 type Type struct {
@@ -140,31 +140,37 @@ func (p *Product) Update() error {
 	})
 }
 
-func GetRandom() ([]Product, error) {
-	var pList []Product
+func GetRandom() ([]bson.M, error) {
+	var pList []bson.M
 	result, err := Client.db.Collection("good").Aggregate(context.Background(),
 		mongo.Pipeline{
-			bson.D{{"$match", bson.D{
-				{"shelves",
-					bson.D{
-						{"$eq", true},
-					}},
-			}}},
 			bson.D{
-				{
-					"$sample",
+				{"$match",
 					bson.D{
-						{"size", 10},
+						{"shelves",
+							bson.D{
+								{"$eq", true},
+							},
+						},
 					},
 				},
 			},
+			//},
+			//bson.D{
+			//	{
+			//		"$sample",
+			//		bson.D{
+			//			{"size", 10},
+			//		},
+			//	},
+			//},
 		})
 	if err != nil {
 		return nil, err
 	}
 
 	for result.Next(context.TODO()) {
-		var res Product
+		var res bson.M
 		_ = result.Decode(&res)
 		pList = append(pList, res)
 	}

@@ -54,7 +54,6 @@ func Index(ctx echo.Context) error {
 		fmt.Println(err.Error())
 		return ctx.JSON(200, nil)
 	}
-	fmt.Println(data)
 	return handler.Response(ctx, handler.ResponseStruct{
 		Code:    0,
 		Message: "",

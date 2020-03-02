@@ -8,9 +8,7 @@ import (
 	cacheClient "github.com/jackyczj/July/cache"
 
 	"github.com/jackyczj/July/handler/user"
-	"github.com/jackyczj/July/log"
 	"github.com/labstack/echo/v4"
-	"github.com/spf13/viper"
 )
 
 // skipper 这些不需要token
@@ -29,8 +27,11 @@ func Skipper(c echo.Context) bool {
 	if method != "GET" {
 		return false
 	}
-	if path == "" {
+	switch path {
+	case "",
+		"/api/v1/Goods/index":
 		return true
+
 	}
 	resource := strings.Split(path, "/")[1]
 	switch resource {
@@ -44,24 +45,16 @@ func Skipper(c echo.Context) bool {
 }
 
 // Validator 校验token是否合法，顺便根据token在 context中赋值 user id
-func Validator(token string, c echo.Context) (bool, error) {
-	// 调试后门
-	log.Logworker.Debug("token:", token)
-	if viper.GetString("runmode") == "debug" {
-		c.Set("user_id", 1)
-		return true, nil
-	}
-	// 寻找token
+func Validator(token string, c echo.Context) (bool, error) { // 寻找token
 	var t = new(user.Token)
 	err := cacheClient.GetCc("token:"+token, t)
 	if err == cache.ErrCacheMiss {
-		print(t)
 		return false, nil
 	} else if err != nil {
 		return false, err
 	}
 	// 设置用户
 	c.Set("user_id", t.UserID)
-
+	c.Set("role", t.Role)
 	return true, nil
 }

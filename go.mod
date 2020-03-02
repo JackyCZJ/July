@@ -13,6 +13,7 @@ require (
 	github.com/aristanetworks/goarista v0.0.0-20191023202215-f096da5361bb // indirect
 	github.com/bilibili/kratos v0.2.3 // indirect
 	github.com/casbin/casbin v1.9.1
+	github.com/casbin/casbin/v2 v2.2.1
 	github.com/coreos/bbolt v1.3.3 // indirect
 	github.com/coreos/etcd v3.3.15+incompatible // indirect
 	github.com/coreos/go-semver v0.3.0 // indirect
@@ -49,7 +50,7 @@ require (
 	github.com/klauspost/reedsolomon v1.9.3 // indirect
 	github.com/kr/pty v1.1.8 // indirect
 	github.com/labstack/echo v3.3.10+incompatible
-	github.com/labstack/echo-contrib v0.6.0
+	github.com/labstack/echo-contrib v0.8.1-0.20200115200653-2d4a7f3c41d8
 	github.com/labstack/echo/v4 v4.1.6
 	github.com/leodido/go-urn v1.2.0 // indirect
 	github.com/magiconair/properties v1.8.1 // indirect

@@ -3,6 +3,9 @@ package main
 import (
 	"net/http"
 
+	"github.com/jackyczj/July/log"
+
+	"github.com/casbin/casbin/v2"
 	"github.com/jackyczj/July/handler/goods"
 
 	Auth "github.com/jackyczj/July/auth"
@@ -38,12 +41,22 @@ func Load(e *echo.Echo) {
 		AuthScheme: "Bearer",
 	}))
 
+	enforcer, err := casbin.NewEnforcer("conf/casbin_auth_model.conf", "conf/casbin_auth_policy.csv")
+	if err != nil {
+		log.Logworker.Fatal(err.Error())
+	}
+
+	e.Use(Auth.MiddlewareWithConfig(Auth.Config{
+		Skipper:  Auth.Skipper,
+		Enforcer: enforcer,
+	}))
+
 	// init config
 	//Account := e.Group("/user/", middleware.CSRF())
 	Account := e.Group("/user")
 	{
 		Account.POST("/login", user.Login)
-		Account.GET("/logout", user.Logout)
+		Account.POST("/logout", user.Logout)
 		Account.POST("/register", user.Register)
 
 	}
@@ -61,6 +74,7 @@ func Load(e *echo.Echo) {
 	{
 		//Goods.GET("/Goods/:str",goodsHandler.Search) //search
 		Goods.GET("/index", goods.Index) //index goods list
+		Goods.GET("/:id", goods.Get)
 	}
 
 	cart := api.Group("/cart")

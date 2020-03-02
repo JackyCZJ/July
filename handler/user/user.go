@@ -26,6 +26,7 @@ import (
 type Token struct {
 	Token     string    `json:"token"`
 	ExpiresAt time.Time `json:"expires_at"`
+	Role      int       `json:"role"`
 	UserID    string    `json:"-"`
 }
 
@@ -87,6 +88,7 @@ func Login(e echo.Context) error {
 	t := &Token{
 		Token:     utils.NewUUID(),
 		ExpiresAt: time.Now().Add(time.Hour * 76),
+		Role:      u.Role,
 		UserID:    strconv.FormatUint(uint64(u.Id), 10),
 	}
 	cache.SetCc("token:"+t.Token, t, time.Hour*76)

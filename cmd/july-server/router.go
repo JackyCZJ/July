@@ -3,13 +3,14 @@ package main
 import (
 	"net/http"
 
+	"github.com/jackyczj/July/handler/file"
+
 	"github.com/jackyczj/July/log"
 
 	"github.com/casbin/casbin/v2"
 	"github.com/jackyczj/July/handler/goods"
 
 	Auth "github.com/jackyczj/July/auth"
-	"github.com/jackyczj/July/handler/captcha"
 	cartHandler "github.com/jackyczj/July/handler/cart"
 	shopHandler "github.com/jackyczj/July/handler/shop"
 	"github.com/jackyczj/July/handler/user"
@@ -60,29 +61,29 @@ func Load(e *echo.Echo) {
 		Account.POST("/register", user.Register)
 
 	}
-
-	Cap := e.Group("/captcha")
-	{
-		Cap.POST("/get", captcha.Generate)
-		Cap.POST("/verify", captcha.Verify)
-	}
+	e.GET("/image/:filename", file.Image)
 
 	//Todo: ⬇️
 	api := e.Group("/api/v1")
 
 	Goods := api.Group("/Goods")
 	{
-		//Goods.GET("/Goods/:str",goodsHandler.Search) //search
 		Goods.GET("/index", goods.Index) //index goods list
 		Goods.GET("/:id", goods.Get)
+		Goods.POST("/add", goods.Add)
+		Goods.POST("/delete/:id", goods.Delete)
+		Goods.PUT("/:id", goods.Edit)
+		Goods.GET("/list", goods.List)
+		Goods.GET("/search/*", goods.Search)
 	}
-
 	cart := api.Group("/cart")
 	{
-		cart.GET("/", cartHandler.List)
-		cart.POST("/", cartHandler.Add)
+		cart.GET("", cartHandler.List)    //获取所有购物车
+		cart.GET("/:id", cartHandler.Get) //获取购物车内的单件商品
+		cart.POST("/", cartHandler.Add)   //添加入购物车
+		cart.PUT("/", cartHandler.Add)    //修改某样商品的数量
 		cart.DELETE("/:id", cartHandler.Delete)
-		cart.DELETE("/", cartHandler.Delete)
+		cart.POST("/clear", cartHandler.Clear) //清空购物车
 	}
 
 	shopping := api.Group("/shop")
@@ -91,5 +92,31 @@ func Load(e *echo.Echo) {
 		shopping.POST("/:id", shopHandler.Add)
 		shopping.DELETE("/:id", shopHandler.Delete)
 	}
+
+	//Order := api.Group("Order")
+	//{
+	//	Order.POST("/Create", order.Add)
+	//	Order.POST("/Pay", order.Pay)
+	//	Order.POST("/Consignment", order.Consignment)
+	//	Order.POST("/Confirm", order.Confirm)
+	//
+	//	Order.GET("/List",order.List)
+	//	Order.GET("/Get/:id",order.Get)
+	//	Order.DELETE("/Delete/:id",order.Delete)
+	//	Order.PUT("/Edit/:id",order.Edit)
+	//}
+	//admin := api.Group("/admin")
+	//{
+	//	//shop := admin.Group("/shop")
+	//	//{
+	//	//	shop.GET("/List",Admin.shopList)
+	//	//	shop.GET("/:id",Admin.shopInfo)
+	//	//	shop.POST("/close",Admin.shopClose)
+	//	//}
+	//	//user := admin.Group("/user")
+	//	//{
+	//	//
+	//	//}
+	//}
 
 }

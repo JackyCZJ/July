@@ -3,7 +3,6 @@ package store
 import (
 	"context"
 	"fmt"
-	"sync"
 	"time"
 
 	"go.mongodb.org/mongo-driver/bson/primitive"
@@ -20,18 +19,18 @@ import (
 )
 
 type Product struct {
-	ProductId    uint16    `json:"product_id" bson:"_id"`                    //商品id
-	Name         string    `json:"name" bson:"name,omitempty"`               //商品名
-	ImageUri     string    `json:"image_uri" bson:"image_uri,omitempty"`     //商品图片url
-	Description  string    `json:"description" bson:"description,omitempty"` //商品介绍
-	Information  Type      `json:"info" bson:"info,omitempty"`               //品牌
-	Price        int       `json:"price" bson:"price,omitempty"`             //价格
-	Off          int       `json:"off" bson:"off,omitempty"`                 //折扣
-	Owner        string    `json:"owner" bson:"owner,omitempty"`             //拥有者
-	CreateAt     time.Time `json:"create_at" bson:"create_at,omitempty"`     //创建时间
-	Shelves      bool      `json:"shelves" bson:"shelves,omitempty"`         //是否上架
-	IsDelete     bool      `json:"is_delete" bson:"is_delete,omitempty"`     //是否已删除
-	sync.RWMutex `json:"_" bson:"_"`
+	ProductId   int32     `json:"product_id" bson:"_id"`                    //商品id
+	Name        string    `json:"name" bson:"name,omitempty"`               //商品名
+	ImageUri    []string  `json:"image_uri" bson:"image_uri,omitempty"`     //商品图片url
+	Description string    `json:"description" bson:"description,omitempty"` //商品介绍
+	Information Type      `json:"info" bson:"info,omitempty"`               //品牌
+	Price       int       `json:"price" bson:"price,omitempty"`             //价格
+	Store       int       `json:"store" json:"store,omitempty"`             //库存
+	Off         int       `json:"off" bson:"off,omitempty"`                 //折扣
+	Owner       string    `json:"owner" bson:"owner,omitempty"`             //拥有者
+	CreateAt    time.Time `json:"create_at" bson:"create_at,omitempty"`     //创建时间
+	Shelves     bool      `json:"shelves" bson:"shelves,omitempty"`         //是否上架
+	IsDelete    bool      `json:"is_delete" bson:"is_delete,omitempty"`     //是否已删除
 }
 
 type Type struct {
@@ -40,14 +39,11 @@ type Type struct {
 }
 
 func (p *Product) Add() error {
-	p.Lock()
-	defer p.Unlock()
-
 	_, err = Client.db.Collection("good").Indexes().CreateOne(context.TODO(), mongo.IndexModel{
 		Keys:    bsonx.Doc{{Key: "_id", Value: bsonx.Int32(0)}},
 		Options: options.Index().SetUnique(true),
 	})
-	p.ProductId = xid.New().Pid()
+	p.ProductId = int32(xid.New().Pid())
 	return Client.client.UseSession(context.TODO(), func(sessionContext mongo.SessionContext) error {
 		if err = sessionContext.StartTransaction(); err != nil {
 			return err
@@ -63,8 +59,6 @@ func (p *Product) Add() error {
 }
 
 func (p *Product) Delete() error {
-	p.Lock()
-	defer p.Unlock()
 	return Client.client.UseSession(context.TODO(), func(sessionContext mongo.SessionContext) error {
 		if err = sessionContext.StartTransaction(); err != nil {
 			return err
@@ -86,8 +80,6 @@ func (p *Product) Delete() error {
 }
 
 func (p *Product) Set(filed string, value interface{}) error {
-	p.Lock()
-	defer p.Unlock()
 	return Client.client.UseSession(context.TODO(), func(sessionContext mongo.SessionContext) error {
 		if err = sessionContext.StartTransaction(); err != nil {
 			return err
@@ -108,9 +100,8 @@ func (p *Product) Set(filed string, value interface{}) error {
 }
 
 func (p *Product) Get() error {
-	p.RLock()
-	defer p.RUnlock()
-	result := Client.db.Collection("good").FindOne(context.TODO(), p)
+	filter := bson.D{{Key: "_id", Value: p.ProductId}}
+	result := Client.db.Collection("good").FindOne(context.TODO(), filter)
 	if result.Err() != nil {
 		return result.Err()
 	}
@@ -121,8 +112,6 @@ func (p *Product) Get() error {
 }
 
 func (p *Product) Update() error {
-	p.Lock()
-	defer p.Unlock()
 	return Client.client.UseSession(context.TODO(), func(sessionContext mongo.SessionContext) error {
 		if err = sessionContext.StartTransaction(); err != nil {
 			return err
@@ -145,11 +134,11 @@ func GetRandom() ([]bson.M, error) {
 	result, err := Client.db.Collection("good").Aggregate(context.Background(),
 		mongo.Pipeline{
 			bson.D{
-				{"$match",
-					bson.D{
-						{"shelves",
-							bson.D{
-								{"$eq", true},
+				{Key: "$match",
+					Value: bson.D{
+						{Key: "shelves",
+							Value: bson.D{
+								{Key: "$eq", Value: true},
 							},
 						},
 					},
@@ -184,7 +173,7 @@ func Search(key string, pageNumber int, PerPage int) ([]Product, error) {
 		{Key: "$and",
 			Value: bson.A{
 				bson.D{{Key: "name", Value: primitive.Regex{Pattern: key, Options: ""}}},
-				bson.D{{Key: "shelves", Value: bson.D{{"$ne", false}}}},
+				bson.D{{Key: "shelves", Value: bson.D{{Key: "$ne", Value: false}}}},
 			},
 		},
 	}

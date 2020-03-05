@@ -36,10 +36,6 @@ type LoginModel struct {
 	HashPassword string `json:"hash_password,omitempty"`
 }
 
-func init() {
-	store.Client.Init()
-}
-
 func Login(e echo.Context) error {
 	lm := new(LoginModel)
 	err := e.Bind(&lm)
@@ -130,7 +126,7 @@ func Register(e echo.Context) error {
 	user.Username = username
 	user.Email = email
 	user.Password, _ = auth.Encrypt(password)
-	user.Id = xid.New().Pid()
+	user.Id = int32(xid.New().Pid())
 	user.Gander = gander
 
 	return nil
@@ -155,7 +151,7 @@ func isEmail(mail string) bool {
 func Get(e echo.Context) error {
 	id := e.Get("user_id")
 	u := new(store.UserInformation)
-	u.Id = id.(uint16)
+	u.Id = id.(int32)
 	u, err := u.GetUser()
 	if err != nil {
 		return echo.NewHTTPError(401, "Get user information fail")
@@ -167,7 +163,7 @@ func Get(e echo.Context) error {
 func Set(e echo.Context) error {
 	id := e.Get("user_id")
 	u := new(store.UserInformation)
-	u.Id = id.(uint16)
+	u.Id = id.(int32)
 	u, err := u.GetUser()
 	if err != nil {
 		return echo.NewHTTPError(401, "Edit user information fail.")

@@ -8,13 +8,14 @@ import (
 
 func TestProduct_Add(t *testing.T) {
 	p := Product{
-		Name:        "wtds332",
-		ImageUri:    "https://via.placeholder.com/150",
+		Name:        "wtds33112",
+		ImageUri:    []string{"https://via.placeholder.com/150", "https://via.placeholder.com/200"},
 		Description: "dfkjalkdfj;a",
 		Information: Type{
 			"不知道啥",
 			"不知道啥",
 		},
+		Store:    10,
 		Price:    1213,
 		Off:      1223,
 		Owner:    "1231",
@@ -35,6 +36,16 @@ func TestSearch(t *testing.T) {
 		t.Fatal(e)
 	}
 	fmt.Println(i)
+}
+
+func TestProduct_Get(t *testing.T) {
+	var p Product
+	p.ProductId = 3864
+	err := p.Get()
+	if err != nil {
+		t.Fatal(err)
+	}
+	t.Log(p)
 }
 
 func TestGetRandom(t *testing.T) {

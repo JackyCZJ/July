@@ -19,7 +19,15 @@ func Delete(ctx echo.Context) error {
 
 }
 
+func Clear(ctx echo.Context) error {
+	return nil
+}
+
 //🛒 List
 func List(ctx echo.Context) error {
+	return nil
+}
+
+func Get(ctx echo.Context) error {
 	return nil
 }

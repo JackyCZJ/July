@@ -15,18 +15,18 @@ import (
 )
 
 type item struct {
-	ProductId uint16 `bson:"product_id"`
-	Count     int    `bson:"count,omitempty"`
+	ProductId int32 `bson:"product_id"`
+	Count     int   `bson:"count,omitempty"`
 }
 
 type Cart struct {
-	Owner    uint16    `bson:"owner"`
+	Owner    int32     `bson:"owner"`
 	Item     []item    `bson:"item,omitempty"`
 	CreateAt time.Time `bson:"create_at,omitempty"`
 	UpdateAt time.Time `bson:"update_at,omitempty"`
 }
 
-func CartAdd(id uint16, product Product, count int) error {
+func CartAdd(id int32, product Product, count int) error {
 	var stash Cart
 	stash.Owner = id
 	filter, err := utils.StructToBson(stash)
@@ -61,7 +61,7 @@ func CartAdd(id uint16, product Product, count int) error {
 	return nil
 }
 
-func CartDel(id uint16, product ...Product) error {
+func CartDel(id int32, product ...Product) error {
 	var stash Cart
 	stash.Owner = id
 	filter, err := utils.StructToBson(stash)

@@ -61,7 +61,7 @@ func Middleware(ce *casbin.Enforcer) echo.MiddlewareFunc {
 func (a *Config) CheckPermission(e echo.Context) (bool, error) {
 	user := e.Get("user_id")
 	role := e.Get("role")
-	if user == nil && role == nil {
+	if user == nil || role == nil {
 		user = "guest"
 		_, err := a.Enforcer.AddRoleForUser(user.(string), "0")
 		if err != nil {

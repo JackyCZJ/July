@@ -24,7 +24,7 @@ import (
 )
 
 type UserInformation struct {
-	Id           uint16    `json:"id,omitempty" bson:"id,omitempty"`
+	Id           int32     `json:"id,omitempty" bson:"id,omitempty"`
 	Username     string    `json:"username" validate:"min=1,max=32" bson:"username,omitempty"`
 	Password     string    `json:"password,omitempty" validate:"min=1,max=32" bson:"password,omitempty"`
 	Email        string    `json:"email,omitempty"  bson:"email,omitempty"`
@@ -61,7 +61,7 @@ func (u *UserInformation) Create() error {
 	}
 	ctx, cancel := context.WithTimeout(context.TODO(), 3*time.Second)
 	defer cancel()
-	u.Id = xid.New().Pid()
+	u.Id = int32(xid.New().Pid())
 	_, err = Client.db.Collection("user").InsertOne(ctx, u)
 	if err != nil {
 		return err

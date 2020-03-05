@@ -27,6 +27,9 @@ func Skipper(c echo.Context) bool {
 	if method != "GET" {
 		return false
 	}
+	if strings.HasPrefix(path, "/api/v1/Goods/") && method == "GET" {
+		return true
+	}
 	switch path {
 	case "",
 		"/api/v1/Goods/index":
@@ -38,7 +41,8 @@ func Skipper(c echo.Context) bool {
 	case
 		// 公开信息，把需要公开的资源每个一行写这里
 		"swagger",
-		"public":
+		"public",
+		"image":
 		return true
 	}
 	return false

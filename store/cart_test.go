@@ -7,7 +7,7 @@ import (
 
 func TestCartAdd(t *testing.T) {
 	type args struct {
-		id      uint16
+		id      int32
 		product Product
 		count   int
 	}
@@ -26,7 +26,7 @@ func TestCartAdd(t *testing.T) {
 			product: Product{
 				ProductId: 1231,
 				Name:      "wtfww",
-				ImageUri:  "http://wtf.img",
+				ImageUri:  []string{"http://wtf.img"},
 				Information: Type{
 					Category: "wtf",
 					Brand:    "wtf",
@@ -41,7 +41,7 @@ func TestCartAdd(t *testing.T) {
 		}, wantErr: false})
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			if err := CartAdd(tt.args.id, tt.args.product, tt.args.count); (err != nil) != tt.wantErr {
+			if err := CartAdd(int32(tt.args.id), tt.args.product, tt.args.count); (err != nil) != tt.wantErr {
 				t.Errorf("CartAdd() error = %v, wantErr %v", err, tt.wantErr)
 			}
 		})
@@ -50,7 +50,7 @@ func TestCartAdd(t *testing.T) {
 
 func TestCartDel(t *testing.T) {
 	type args struct {
-		id      uint16
+		id      int32
 		product Product
 	}
 	var tests []struct {
@@ -68,7 +68,7 @@ func TestCartDel(t *testing.T) {
 			product: Product{
 				ProductId: 1231,
 				Name:      "wtfww",
-				ImageUri:  "http://wtf.img",
+				ImageUri:  []string{"http://wtf.img"},
 				Information: Type{
 					Category: "wtf",
 					Brand:    "wtf",

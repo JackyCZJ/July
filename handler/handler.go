@@ -16,7 +16,7 @@ func Response(ctx echo.Context, responseStruct ResponseStruct) error {
 
 func ErrorResp(ctx echo.Context, err error, errCode int) error {
 	res := ResponseStruct{
-		Code:    0,
+		Code:    1,
 		Message: err.Error(),
 		Data:    nil,
 	}

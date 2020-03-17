@@ -7,8 +7,6 @@ import (
 	"strconv"
 	"time"
 
-	"github.com/rs/xid"
-
 	"github.com/jackyczj/July/cache"
 
 	"github.com/jackyczj/July/handler"
@@ -28,6 +26,7 @@ type Token struct {
 	ExpiresAt time.Time `json:"expires_at"`
 	Role      int       `json:"role"`
 	UserID    string    `json:"-"`
+	Username  string    `json:"username"`
 }
 
 type LoginModel struct {
@@ -72,7 +71,7 @@ func Login(e echo.Context) error {
 		return echo.NewHTTPError(401, "AuthFailed,password incorrect.")
 	}
 
-	claims["name"] = lm.Username
+	claims["name"] = u.Username
 
 	claims["exp"] = time.Now().Add(time.Hour * 72).Unix()
 
@@ -86,6 +85,7 @@ func Login(e echo.Context) error {
 		ExpiresAt: time.Now().Add(time.Hour * 76),
 		Role:      u.Role,
 		UserID:    strconv.FormatUint(uint64(u.Id), 10),
+		Username:  u.Username,
 	}
 	cache.SetCc("token:"+t.Token, t, time.Hour*76)
 	return e.JSON(http.StatusOK, t)
@@ -95,41 +95,99 @@ func Login(e echo.Context) error {
 func Logout(e echo.Context) error {
 	id := e.Get("user_id")
 	fmt.Println(id)
+
 	return e.JSON(http.StatusOK, nil)
 }
 
+type Reg struct {
+	Username        string   `json:"username"`
+	Password        string   `json:"password"`
+	ConfirmPassword string   `json:"confirm"`
+	Phone           string   `json:"phone"`
+	Email           string   `json:"email"`
+	Residence       []string `json:"residence"`
+	Address         string   `json:"address"`
+}
+
 func Register(e echo.Context) error {
-
-	user := store.UserInformation{}
-	user.Lock()
-	username := e.FormValue("username")
-	if username == "" {
-		return echo.NewHTTPError(401, "Username can't be empty")
-	}
-	password := e.FormValue("password")
-	if password == "" {
-		return echo.NewHTTPError(401, "Password can't be empty")
-	}
-	//phone := e.FormValue("phone")
-	//if !isPhone(phone) {
-	//	return echo.NewHTTPError(401, "Phone format error")
-	//}
-	email := e.FormValue("mail")
-	if !isEmail(email) {
-		return echo.NewHTTPError(401, "Email format error")
-	}
-	g := e.FormValue("gander")
-	gander, err := strconv.Atoi(g)
+	r := new(Reg)
+	err := e.Bind(r)
 	if err != nil {
-		return echo.NewHTTPError(401, "Gander invalid")
+		return handler.ErrorResp(e, err, 500)
 	}
-	user.Username = username
-	user.Email = email
-	user.Password, _ = auth.Encrypt(password)
-	user.Id = int32(xid.New().Pid())
-	user.Gander = gander
+	if store.UserExist(r.Username) {
+		return handler.ErrorResp(e, fmt.Errorf("username Exist "), 403)
+	}
+	if !isPhone(r.Phone) {
+		return handler.ErrorResp(e, fmt.Errorf("Not Vail phone fomat . "), 403)
+	}
+	if !isEmail(r.Email) {
+		return handler.ErrorResp(e, fmt.Errorf("Not Vail Email fomat . "), 403)
+	}
+	if store.EmailExist(r.Email) {
+		return handler.ErrorResp(e, fmt.Errorf("Email alreay registed "), 403)
+	}
+	switch r.Password {
+	case "":
+		return handler.ErrorResp(e, fmt.Errorf("password should not be empty "), 403)
+	default:
+		return handler.ErrorResp(e, fmt.Errorf("Password not match . "), 403)
+	case r.ConfirmPassword:
+	}
+	var u store.UserInformation
+	u.Username = r.Username
+	ep, _ := auth.Encrypt(r.Password)
+	u.Password = ep
+	u.Email = r.Email
+	u.Phone = r.Phone
 
-	return nil
+	a := new(store.Address)
+	a.Phone = u.Phone
+	a.Name = "默认地址"
+	a.Addr = r.Address
+	a.Residence = r.Residence
+	u.Addresses = append(u.Addresses, *a)
+	u.Role = 1
+	err = u.Create()
+	if err != nil {
+		return handler.ErrorResp(e, err, 500)
+	}
+
+	token := jwt.New(jwt.SigningMethodHS256)
+	claims := token.Claims.(jwt.MapClaims)
+	claims["name"] = u.Username
+
+	claims["exp"] = time.Now().Add(time.Hour * 72).Unix()
+
+	_, _ = token.SignedString([]byte(viper.GetString("jwt_secret")))
+	t := &Token{
+		Token:     utils.NewUUID(),
+		ExpiresAt: time.Now().Add(time.Hour * 76),
+		Role:      u.Role,
+		UserID:    strconv.FormatUint(uint64(u.Id), 10),
+		Username:  u.Username,
+	}
+	cache.SetCc("token:"+t.Token, t, time.Hour*76)
+
+	return e.JSON(http.StatusOK, t)
+}
+
+func CheckUsername(e echo.Context) error {
+	key := e.Param("key")
+	return handler.Response(e, handler.ResponseStruct{
+		Code:    0,
+		Message: "",
+		Data:    store.UserExist(key),
+	})
+}
+
+func CheckEmail(e echo.Context) error {
+	key := e.Param("key")
+	return handler.Response(e, handler.ResponseStruct{
+		Code:    0,
+		Message: "",
+		Data:    store.EmailExist(key),
+	})
 }
 
 func isPhone(phone string) bool {

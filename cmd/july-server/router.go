@@ -58,6 +58,8 @@ func Load(e *echo.Echo) {
 	{
 		Account.POST("/login", user.Login)
 		Account.POST("/logout", user.Logout)
+		Account.GET("/checkUsername/:key", user.CheckUsername)
+		Account.GET("/checkEmail/:key", user.CheckEmail)
 		Account.POST("/register", user.Register)
 
 	}
@@ -70,11 +72,13 @@ func Load(e *echo.Echo) {
 	{
 		Goods.GET("/index", goods.Index) //index goods list
 		Goods.GET("/:id", goods.Get)
-		Goods.POST("/add", goods.Add)
-		Goods.POST("/delete/:id", goods.Delete)
-		Goods.PUT("/:id", goods.Edit)
-		Goods.GET("/list", goods.List)
 		Goods.GET("/search/*", goods.Search)
+		//search hint
+		Goods.GET("/suggestion/:keyword", goods.Suggestion)
+		Goods.GET("/suggestion/", goods.Suggestion)
+		//Comment api ,but without auth
+		Goods.POST("/comment/:id", goods.Comment)
+		Goods.DELETE("/comment/:id", goods.DelComment)
 	}
 	cart := api.Group("/cart")
 	{
@@ -91,6 +95,10 @@ func Load(e *echo.Echo) {
 		shopping.GET("", shopHandler.List)
 		shopping.POST("/:id", shopHandler.Add)
 		shopping.DELETE("/:id", shopHandler.Delete)
+
+		shopping.POST("/product/add", goods.Add)
+		shopping.DELETE("/product/:id", goods.Delete)
+		shopping.PUT("/product/:id", goods.Edit)
 	}
 
 	//Order := api.Group("Order")

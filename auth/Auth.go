@@ -27,7 +27,10 @@ func Skipper(c echo.Context) bool {
 	if method != "GET" {
 		return false
 	}
-	if strings.HasPrefix(path, "/api/v1/Goods/") && method == "GET" {
+	if strings.HasPrefix(path, "/user/checkUsername") {
+		return true
+	}
+	if strings.HasPrefix(path, "/api/v1/Goods/") {
 		return true
 	}
 	switch path {

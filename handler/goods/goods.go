@@ -3,12 +3,10 @@ package goods
 import (
 	"fmt"
 	"net/http"
-	"strconv"
 
 	"github.com/jackyczj/July/handler"
 	"github.com/jackyczj/July/store"
 	"github.com/labstack/echo/v4"
-	"github.com/rs/xid"
 )
 
 /*
@@ -23,20 +21,28 @@ import (
 
 func Search(ctx echo.Context) error {
 	search := struct {
-		Keyword string `query:"keyword"`
-		Page    int    `query:"page"`
-		PerPage int    `query:"PerPage"`
+		Keyword string          `query:"keyword"`
+		Page    int             `query:"page"`
+		PerPage int             `query:"PerPage"`
+		Total   int             `json:"total"`
+		Data    []store.Product `json:"data"`
 	}{}
 	_ = ctx.Bind(search)
 	key := search.Keyword
 	page := search.Page
 	perPage := search.PerPage
-	data, err := store.Search(key, page, perPage)
+	data, total, err := store.Search(key, page, perPage)
 	if err != nil {
 		return handler.ErrorResp(ctx, err, 404)
 	}
-
-	return ctx.JSON(200, data)
+	search.Total = total
+	search.Data = data
+	resp := handler.ResponseStruct{
+		Code:    0,
+		Message: "",
+		Data:    search,
+	}
+	return handler.Response(ctx, resp)
 }
 
 func Index(ctx echo.Context) error {
@@ -55,12 +61,9 @@ func Index(ctx echo.Context) error {
 
 func Get(ctx echo.Context) error {
 	pid := ctx.Param("id")
-	id, err := strconv.Atoi(pid)
-	if err != nil {
-		return handler.ErrorResp(ctx, err, 500)
-	}
-	p := store.Product{ProductId: int32(id)}
-	err = p.Get()
+
+	p := store.Product{ProductId: pid}
+	err := p.Get()
 	if err != nil {
 		return handler.ErrorResp(ctx, err, 404)
 	}
@@ -101,8 +104,6 @@ func Add(ctx echo.Context) error {
 		return handler.ErrorResp(ctx, err, 404)
 	}
 	good.Owner = u.Username
-	good.ProductId = int32(xid.New().Pid())
-
 	form, err := ctx.MultipartForm()
 	if err != nil {
 		return err
@@ -158,11 +159,8 @@ func Delete(ctx echo.Context) error {
 		return handler.ErrorResp(ctx, err, 403)
 	}
 	p := new(store.Product)
-	id, err := strconv.ParseUint(ctx.Param("id"), 10, 10)
-	if err != nil {
-		return handler.ErrorResp(ctx, err, 500)
-	}
-	p.ProductId = int32(id)
+	id := ctx.Param("id")
+	p.ProductId = id
 	err = p.Get()
 	if err != nil {
 		return handler.ErrorResp(ctx, err, 500)
@@ -196,11 +194,8 @@ func Edit(ctx echo.Context) error {
 		return handler.ErrorResp(ctx, err, 403)
 	}
 	p := new(store.Product)
-	id, err := strconv.ParseUint(ctx.Param("id"), 10, 10)
-	if err != nil {
-		return handler.ErrorResp(ctx, err, 500)
-	}
-	p.ProductId = int32(id)
+	id := ctx.Param("id")
+	p.ProductId = id
 	err = p.Get()
 	if err != nil {
 		return handler.ErrorResp(ctx, err, 404)
@@ -223,6 +218,41 @@ func Edit(ctx echo.Context) error {
 	})
 }
 
-func List(ctx echo.Context) error {
-	return nil
+func Suggestion(ctx echo.Context) error {
+	keyword := ctx.Param("keyword")
+	answer := store.Suggestion(keyword)
+	return handler.Response(ctx, handler.ResponseStruct{
+		Code:    0,
+		Message: "",
+		Data:    answer,
+	})
+}
+
+func Comment(ctx echo.Context) error {
+	commentId := ctx.Param("id")
+	c := store.Comment{}
+	err := ctx.Bind(&c)
+	if err != nil {
+		return ctx.JSON(500, err)
+	}
+	err = store.AddComment(commentId, c)
+	if err != nil {
+		return ctx.JSON(500, err)
+	}
+	return ctx.JSON(200, nil)
+}
+
+func DelComment(ctx echo.Context) error {
+	commentId := ctx.Param("id")
+	user := store.UserInformation{}
+	user.Id = ctx.Get("user_id").(int32)
+	u, err := user.GetUser()
+	if err != nil {
+		return ctx.JSON(500, err)
+	}
+	err = store.DeleteComment(commentId, u.Username)
+	if err != nil {
+		return ctx.JSON(500, err)
+	}
+	return ctx.JSON(200, nil)
 }

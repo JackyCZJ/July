@@ -15,8 +15,8 @@ import (
 )
 
 type item struct {
-	ProductId int32 `bson:"product_id"`
-	Count     int   `bson:"count,omitempty"`
+	ProductId string `bson:"product_id"`
+	Count     int    `bson:"count,omitempty"`
 }
 
 type Cart struct {

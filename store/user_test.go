@@ -20,8 +20,9 @@ func init() {
 }
 func TestUserInformation_Create(t *testing.T) {
 	ui := UserInformation{
-		Username: "JackyTest2",
+		Username: "JackyTest3",
 		Password: "wtfIsPassword",
+		Email:    "test@test.com",
 		Role:     2,
 	}
 	err := ui.Create()
@@ -65,4 +66,8 @@ func TestUserInformation_del(t *testing.T) {
 	if err != nil {
 		t.Fatal(err)
 	}
+}
+
+func TestUserExist(t *testing.T) {
+	fmt.Println(UserExist("JackyTest"))
 }

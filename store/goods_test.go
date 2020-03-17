@@ -8,7 +8,7 @@ import (
 
 func TestProduct_Add(t *testing.T) {
 	p := Product{
-		Name:        "wtds33112",
+		Name:        "wtds342123",
 		ImageUri:    []string{"https://via.placeholder.com/150", "https://via.placeholder.com/200"},
 		Description: "dfkjalkdfj;a",
 		Information: Type{
@@ -21,7 +21,6 @@ func TestProduct_Add(t *testing.T) {
 		Owner:    "1231",
 		CreateAt: time.Now(),
 		Shelves:  true,
-		IsDelete: false,
 	}
 
 	err := p.Add()
@@ -31,16 +30,16 @@ func TestProduct_Add(t *testing.T) {
 }
 
 func TestSearch(t *testing.T) {
-	i, e := Search("1222", 1, 10)
+	i, c, e := Search("1222", 1, 10)
 	if e != nil {
 		t.Fatal(e)
 	}
-	fmt.Println(i)
+	fmt.Println(i, c)
 }
 
 func TestProduct_Get(t *testing.T) {
 	var p Product
-	p.ProductId = 3864
+	p.ProductId = "123123"
 	err := p.Get()
 	if err != nil {
 		t.Fatal(err)
@@ -55,4 +54,20 @@ func TestGetRandom(t *testing.T) {
 	}
 	fmt.Println(i)
 	fmt.Println(len(i))
+}
+
+func TestGetListByShop(t *testing.T) {
+	p := GetListByShop("1231", true)
+	if len(p) == 0 {
+		t.Fatal("Get fail")
+	}
+	fmt.Println(p)
+}
+
+func TestSuggestion(t *testing.T) {
+	p := Suggestion("wt")
+	if len(p) == 0 {
+		t.Fatal("Get fail")
+	}
+	fmt.Println(p)
 }

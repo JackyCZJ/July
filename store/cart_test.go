@@ -24,7 +24,7 @@ func TestCartAdd(t *testing.T) {
 		name: "test1", args: args{
 			id: 32519,
 			product: Product{
-				ProductId: 1231,
+				ProductId: "1231",
 				Name:      "wtfww",
 				ImageUri:  []string{"http://wtf.img"},
 				Information: Type{
@@ -35,7 +35,6 @@ func TestCartAdd(t *testing.T) {
 				Off:      25,
 				Owner:    "",
 				CreateAt: time.Now(),
-				IsDelete: false,
 			},
 			count: 3,
 		}, wantErr: false})
@@ -66,7 +65,7 @@ func TestCartDel(t *testing.T) {
 		name: "test1", args: args{
 			id: 32519,
 			product: Product{
-				ProductId: 1231,
+				ProductId: "123123123",
 				Name:      "wtfww",
 				ImageUri:  []string{"http://wtf.img"},
 				Information: Type{
@@ -77,7 +76,6 @@ func TestCartDel(t *testing.T) {
 				Off:      25,
 				Owner:    "",
 				CreateAt: time.Now(),
-				IsDelete: false,
 			},
 		}, wantErr: false})
 	for _, tt := range tests {

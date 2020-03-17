@@ -3,8 +3,9 @@ package store
 import (
 	"context"
 	"fmt"
-	"sync"
 	"time"
+
+	"go.mongodb.org/mongo-driver/bson/primitive"
 
 	"github.com/jackyczj/July/utils"
 
@@ -16,20 +17,18 @@ import (
 )
 
 type Shop struct {
-	Name         string    `json:"name" bson:"name"`
-	Owner        string    `json:"owner" bson:"owner,omitempty"`
-	Description  string    `json:"description" bson:"description,omitempty"`
-	IsClose      bool      `json:"is_close" bson:"is_close,omitempty"`
-	CreateAt     time.Time `json:"create_at" bson:"create_at,omitempty"`
-	CloseAt      time.Time `json:"close_at" bson:"close_at,omitempty"`
-	sync.RWMutex `bson:"-"`
-	IsDelete     bool `json:"is_delete" bson:"is_delete,omitempty"`
+	Id          string    `bson:"_id,omitempty"`
+	Name        string    `json:"name" bson:"name"`
+	Owner       string    `json:"owner" bson:"owner,omitempty"`
+	Description string    `json:"description" bson:"description,omitempty"`
+	IsClose     bool      `json:"is_close" bson:"is_close,omitempty"`
+	CreateAt    time.Time `json:"create_at" bson:"create_at,omitempty"`
+	CloseAt     time.Time `json:"close_at" bson:"close_at,omitempty"`
+	IsDelete    bool      `json:"is_delete" bson:"is_delete,omitempty"`
 }
 
 //创建一家店铺的存储方法
 func (s *Shop) Create() error {
-	s.Lock()
-	defer s.Unlock()
 	_, err = Client.db.Collection("shop").Indexes().CreateOne(context.TODO(), mongo.IndexModel{
 		Keys:    bsonx.Doc{{Key: "name", Value: bsonx.String("")}},
 		Options: options.Index().SetUnique(true),
@@ -50,8 +49,6 @@ func (s *Shop) Create() error {
 
 //删除一家店铺
 func (s *Shop) Delete() error {
-	s.Lock()
-	defer s.Unlock()
 	return Client.client.UseSession(context.TODO(), func(sessionContext mongo.SessionContext) error {
 		if err = sessionContext.StartTransaction(); err != nil {
 			return err
@@ -74,8 +71,6 @@ func (s *Shop) Delete() error {
 
 //修改店铺信息
 func (s *Shop) Set(filed string, value interface{}) error {
-	s.Lock()
-	defer s.Unlock()
 	return Client.client.UseSession(context.TODO(), func(sessionContext mongo.SessionContext) error {
 		if err = sessionContext.StartTransaction(); err != nil {
 			return err
@@ -93,4 +88,76 @@ func (s *Shop) Set(filed string, value interface{}) error {
 			return sessionContext.CommitTransaction(sessionContext)
 		}
 	})
+}
+
+func ShopList(pageNumber int, PerPage int) ([]Shop, int, error) {
+	var page int
+	if pageNumber > 0 {
+		page = (pageNumber - 1) * PerPage
+	} else {
+		page = 0
+	}
+	opt := options.FindOptions{}
+
+	opt.SetSkip(int64(page))
+	opt.SetLimit(int64(PerPage))
+	var shopList []Shop
+
+	filter := bson.D{
+		{Key: "is_delete", Value: false},
+	}
+	count, _ := Client.db.Collection("shop").CountDocuments(context.TODO(), filter)
+
+	result, err := Client.db.Collection("shop").Find(context.TODO(), filter, &opt)
+	if err != nil {
+		if err == mongo.ErrNoDocuments {
+			return shopList, 0, nil
+		}
+		return nil, 0, err
+	}
+	for result.Next(context.TODO()) {
+		var shop Shop
+		err := result.Decode(&shop)
+		if err != nil {
+			return nil, 0, err
+		}
+		shopList = append(shopList, shop)
+	}
+	return shopList, int(count), nil
+}
+
+func SearchShop(keyword string, pageNumber int, PerPage int) ([]Shop, int, error) {
+	filter := bson.D{{
+		Key: "$or", Value: []bson.D{
+			{{Key: "name", Value: primitive.Regex{Pattern: keyword, Options: ""}}},
+			{{Key: "owner", Value: primitive.Regex{Pattern: keyword, Options: ""}}},
+		}},
+	}
+	var shopList []Shop
+	opt := options.FindOptions{}
+	var page int
+	if pageNumber > 0 {
+		page = (pageNumber - 1) * PerPage
+	} else {
+		page = 0
+	}
+	opt.SetSkip(int64(page))
+	opt.SetLimit(int64(PerPage))
+	Total, _ := Client.db.Collection("shop").CountDocuments(context.TODO(), filter)
+	result, err := Client.db.Collection("shop").Find(context.TODO(), filter, &opt)
+	if err != nil {
+		if err == mongo.ErrNoDocuments {
+			return shopList, 0, nil
+		}
+		return nil, 0, err
+	}
+	for result.Next(context.TODO()) {
+		var shop Shop
+		err := result.Decode(&shop)
+		if err != nil {
+			return nil, 0, err
+		}
+		shopList = append(shopList, shop)
+	}
+	return shopList, int(Total), nil
 }

@@ -13,6 +13,7 @@ require (
 	github.com/go-redis/cache/v7 v7.0.2
 	github.com/go-redis/redis v6.15.5+incompatible // indirect
 	github.com/go-redis/redis/v7 v7.0.0-beta.4
+	github.com/gobwas/glob v0.2.3 // indirect
 	github.com/golang/snappy v0.0.1 // indirect
 	github.com/google/go-cmp v0.3.1 // indirect
 	github.com/jackyczj/fdfs_client v0.0.0-20200303020550-8bb0af7095af
@@ -28,6 +29,7 @@ require (
 	github.com/pkg/errors v0.8.1 // indirect
 	github.com/rs/xid v1.2.1
 	github.com/satori/go.uuid v1.2.0
+	github.com/smartwalle/alipay/v3 v3.1.0
 	github.com/spf13/afero v1.2.2 // indirect
 	github.com/spf13/jwalterweatherman v1.1.0 // indirect
 	github.com/spf13/pflag v1.0.5

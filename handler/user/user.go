@@ -144,9 +144,11 @@ func Register(e echo.Context) error {
 	a := new(store.Address)
 	a.Phone = u.Phone
 	a.Name = "默认地址"
-	a.Addr = r.Address
-	a.Residence = r.Residence
+	a.Area = r.Residence[3]
+	a.Address = r.Address
+	a.UserID = u.Id
 	u.Addresses = append(u.Addresses, *a)
+	a.IsDefault = true
 	u.Role = 1
 	err = u.Create()
 	if err != nil {
@@ -265,4 +267,25 @@ func VailPhone(phone string) bool {
 func VailEmail(email string) bool {
 	//todo:send message
 	return true
+}
+
+func Address(ctx echo.Context) error {
+	//fuck safe
+	id := ctx.Param("id")
+	i, err := strconv.Atoi(id)
+	if err != nil {
+		return handler.ErrorResp(ctx, err, 500)
+	}
+	var u store.UserInformation
+	u.Id = int32(i)
+	_, err = u.GetUser()
+	if err != nil {
+		return handler.ErrorResp(ctx, err, 404)
+	}
+
+	return handler.Response(ctx, handler.ResponseStruct{
+		Code:    0,
+		Message: "",
+		Data:    u.Addresses,
+	})
 }

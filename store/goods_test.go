@@ -8,7 +8,7 @@ import (
 
 func TestProduct_Add(t *testing.T) {
 	p := Product{
-		Name:        "wtds342123",
+		Name:        "awsl",
 		ImageUri:    []string{"https://via.placeholder.com/150", "https://via.placeholder.com/200"},
 		Description: "dfkjalkdfj;a",
 		Information: Type{
@@ -18,7 +18,7 @@ func TestProduct_Add(t *testing.T) {
 		Store:    10,
 		Price:    1213,
 		Off:      1223,
-		Owner:    "1231",
+		Owner:    "57606",
 		CreateAt: time.Now(),
 		Shelves:  true,
 	}

@@ -33,7 +33,7 @@ func TestCartAdd(t *testing.T) {
 				},
 				Price:    999,
 				Off:      25,
-				Owner:    "",
+				Owner:    "12312",
 				CreateAt: time.Now(),
 			},
 			count: 3,
@@ -74,7 +74,7 @@ func TestCartDel(t *testing.T) {
 				},
 				Price:    999,
 				Off:      25,
-				Owner:    "",
+				Owner:    "57606",
 				CreateAt: time.Now(),
 			},
 		}, wantErr: false})

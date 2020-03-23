@@ -23,7 +23,7 @@ type Product struct {
 	Price       float64   `json:"price" bson:"price,omitempty"`             //价格
 	Store       int       `json:"store" bson:"store,omitempty"`             //库存
 	Off         int       `json:"off" bson:"off,omitempty"`                 //折扣
-	Owner       string    `json:"owner" bson:"owner,omitempty"`             //拥有者
+	Owner       string    `json:"owner" bson:"owner,omitempty"`             //拥有者,商店ID
 	CreateAt    time.Time `json:"create_at" bson:"create_at,omitempty"`     //创建时间
 	Shelves     bool      `json:"shelves" bson:"shelves,omitempty"`         //是否上架
 }

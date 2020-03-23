@@ -34,12 +34,12 @@ func Create(ctx echo.Context) error {
 	var O Order
 	for _, v := range O.OrderList {
 		var s store.Order
-		s.Buyer = u.Username
+		s.Buyer = u.Id
 		s.CreateTime = time.Now().UTC()
 		s.Payment = v.Product.Price * float64(v.Count)
 		s.Status = UnPay
 		s.IsClose = false
-		s.ShippingTo = u.Addresses[O.AddressIndex]
+		s.ShippingTo = O.AddressIndex
 		s.Seller = v.Product.Owner
 		cache.SetCc("Order:"+s.OrderNo, s, 12*time.Hour) //存入缓存，12小时内未完成便自动删除
 		return s.Create()
@@ -47,10 +47,84 @@ func Create(ctx echo.Context) error {
 	return nil
 }
 
-func List() {
-
+func List(ctx echo.Context) error {
+	u := ctx.Get("user_id").(int32)
+	r := ctx.Get("role").(int)
+	return handler.Response(ctx, handler.ResponseStruct{
+		Code:    0,
+		Message: "",
+		Data:    store.OrderList(u, r),
+	})
 }
 
-func Search() {
+func Get(ctx echo.Context) error {
+	id := ctx.Get(":id").(string)
+	o := store.Order{}
+	o.OrderNo = id
+	err := o.Get()
+	if err != nil {
+		return handler.ErrorResp(ctx, err, 404)
+	}
+	return handler.Response(ctx, handler.ResponseStruct{
+		Code:    0,
+		Message: "",
+		Data:    o,
+	})
+}
 
+func Transmit(ctx echo.Context) error {
+	id := ctx.Param("id")
+	tn := ctx.Param("tn")
+	o := store.Order{}
+	o.OrderNo = id
+	err := o.Get()
+	if err != nil {
+		return handler.ErrorResp(ctx, err, 404)
+	}
+
+	o.Status = SHIPPING
+	o.TrackingNum = tn
+	err = o.UpdateAll()
+	if err != nil {
+		return handler.ErrorResp(ctx, err, 500)
+	}
+	return handler.Response(ctx, handler.ResponseStruct{
+		Code:    0,
+		Message: "",
+		Data:    nil,
+	})
+}
+
+func Delete(ctx echo.Context) error {
+	orderId := ctx.Param(":id")
+	o := store.Order{}
+	o.OrderNo = orderId
+	err := o.Delete()
+	if err != nil {
+		return handler.ErrorResp(ctx, err, 500)
+	}
+	return handler.Response(ctx, handler.ResponseStruct{
+		Code:    0,
+		Message: "",
+		Data:    nil,
+	})
+}
+
+func Edit(ctx echo.Context) error {
+	orderId := ctx.Param(":id")
+	var O store.Order
+	err := ctx.Bind(&O)
+	if err != nil {
+		return handler.ErrorResp(ctx, err, 500)
+	}
+	O.OrderNo = orderId
+	err = O.UpdateAll()
+	if err != nil {
+		return handler.ErrorResp(ctx, err, 500)
+	}
+	return handler.Response(ctx, handler.ResponseStruct{
+		Code:    0,
+		Message: "",
+		Data:    nil,
+	})
 }

@@ -37,7 +37,6 @@ func Skipper(c echo.Context) bool {
 	case "",
 		"/api/v1/Goods/index":
 		return true
-
 	}
 	resource := strings.Split(path, "/")[1]
 	switch resource {

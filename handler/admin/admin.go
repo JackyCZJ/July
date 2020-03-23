@@ -30,24 +30,47 @@ func ShopList(ctx echo.Context) error {
 	})
 }
 
-func UserList() {
-	userList := struct {
+func Status(ctx echo.Context) error {
+	s, err := store.StatusGet()
+	if err != nil {
+		return handler.ErrorResp(ctx, err, 500)
+	}
+	return handler.Response(ctx, handler.ResponseStruct{
+		Code:    0,
+		Message: "",
+		Data:    s,
+	})
+}
+
+func UserList(ctx echo.Context) error {
+	var resq = struct {
 		Page    int                     `query:"page" json:"page"`
-		PerPage int                     `query:"per_page" json:"per_page"`
+		PerPage int                     `query:"per_Page" json:"per_Page"`
 		Total   int                     `json:"total"`
 		Data    []store.UserInformation `json:"data"`
 	}{}
+	err := ctx.Bind(&resq)
+	if err != nil {
+		return handler.ErrorResp(ctx, err, 500)
+	}
+	userList, total, err := store.UserList(resq.Page, resq.PerPage)
+	if err != nil {
+		return handler.ErrorResp(ctx, err, 500)
+	}
+	resq.Data = userList
+	resq.Total = total
+	return handler.Response(ctx, handler.ResponseStruct{
+		Code:    0,
+		Message: "",
+		Data:    resq,
+	})
 
 }
 
-func UserBan() {
-
+func UserBan(ctx echo.Context) error {
+	return nil
 }
 
-func ShopBan() {
-
-}
-
-func Comment() {
-
+func ShopBan(ctx echo.Context) error {
+	return nil
 }

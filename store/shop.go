@@ -18,8 +18,9 @@ import (
 
 type Shop struct {
 	Id          string    `bson:"_id,omitempty"`
-	Name        string    `json:"name" bson:"name"`
-	Owner       string    `json:"owner" bson:"owner,omitempty"`
+	Name        string    `json:"name" bson:"name,omitempty"`
+	Owner       int32     `json:"owner" bson:"owner,omitempty"`
+	Manager     []int32   `json:"manager" bson:"manager,omitempty"`
 	Description string    `json:"description" bson:"description,omitempty"`
 	IsClose     bool      `json:"is_close" bson:"is_close,omitempty"`
 	CreateAt    time.Time `json:"create_at" bson:"create_at,omitempty"`
@@ -90,6 +91,7 @@ func (s *Shop) Set(filed string, value interface{}) error {
 	})
 }
 
+//商店列表
 func ShopList(pageNumber int, PerPage int) ([]Shop, int, error) {
 	var page int
 	if pageNumber > 0 {
@@ -126,6 +128,7 @@ func ShopList(pageNumber int, PerPage int) ([]Shop, int, error) {
 	return shopList, int(count), nil
 }
 
+//搜索商店
 func SearchShop(keyword string, pageNumber int, PerPage int) ([]Shop, int, error) {
 	filter := bson.D{{
 		Key: "$or", Value: []bson.D{
@@ -160,4 +163,128 @@ func SearchShop(keyword string, pageNumber int, PerPage int) ([]Shop, int, error
 		shopList = append(shopList, shop)
 	}
 	return shopList, int(Total), nil
+}
+
+//根据ID获取商店信息
+func (s *Shop) Get() error {
+	i, err := primitive.ObjectIDFromHex(s.Id)
+	if err != nil {
+		return err
+	}
+	filter := bson.D{
+		{
+			"_id", i,
+		},
+	}
+	result := Client.db.Collection("shop").FindOne(context.TODO(), filter)
+	if result.Err() != nil {
+		return result.Err()
+	}
+	if err := result.Decode(&s); err != nil {
+		return err
+	}
+	return nil
+}
+
+//根据拥有者Id获取商店
+func (s *Shop) GetByOwner() error {
+	filter := bson.D{
+		{
+			"owner", s.Owner,
+		},
+	}
+	result := Client.db.Collection("shop").FindOne(context.TODO(), filter)
+	if result.Err() != nil {
+		return result.Err()
+	}
+	if err := result.Decode(&s); err != nil {
+		return err
+	}
+	return nil
+}
+
+type ShopStatus struct {
+	Shop
+	UnPay     int     `json:"un_pay"`
+	UnShip    int     `json:"un_ship"`
+	Shipping  int     `json:"shipping"`
+	Received  int     `json:"received"`
+	Commented int     `json:"commented"`
+	Money     float64 `json:"money"`
+	OrderList []Order `json:"order_list"`
+}
+
+const UnPay = "0"
+const UnShip = "1"
+const SHIPPING = "2"
+const RECEIVED = "3"
+const COMMENTED = "4"
+
+//获取商店状态
+func (s *Shop) Status() (*ShopStatus, error) {
+	filter := bson.D{
+		{"owner", s.Owner},
+	}
+	var status ShopStatus
+	var OrderList []Order
+	if s.Get() != nil {
+		return nil, err
+	}
+	status.Shop = *s
+	result, err := Client.db.Collection("Order").Find(context.TODO(), filter)
+	if err != nil {
+		if err != mongo.ErrNoDocuments {
+
+		}
+		return nil, err
+	}
+	err = result.Decode(&OrderList)
+	if err != nil {
+		return nil, err
+	}
+	for i := range OrderList {
+		switch OrderList[i].Status {
+		case UnPay:
+			status.UnPay += 1
+		case UnShip:
+			status.UnShip += 1
+		case SHIPPING:
+			status.Shipping += 1
+		case RECEIVED:
+			status.Money += OrderList[i].Payment
+			status.Received += 1
+		case COMMENTED:
+			status.Money += OrderList[i].Payment
+			status.Commented += 1
+		default:
+		}
+	}
+	status.OrderList = OrderList
+
+	return &status, nil
+}
+
+//Shop modify ;current can only modify description ，name ,and Close status ,
+func (s *Shop) ShopModify() error {
+	i, err := primitive.ObjectIDFromHex(s.Id)
+	if err != nil {
+		return err
+	}
+	filter := bson.D{
+		{
+			"_id", i,
+		},
+	}
+	update := bson.D{{
+		Key: "$set", Value: bson.D{
+			{"description", s.Description},
+			{"is_close", s.IsClose},
+			{"name", s.Name},
+		},
+	}}
+	result := Client.db.Collection("shop").FindOneAndUpdate(context.TODO(), filter, update)
+	if result.Err() != nil {
+		return result.Err()
+	}
+	return nil
 }

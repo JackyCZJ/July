@@ -3,6 +3,8 @@ package main
 import (
 	"net/http"
 
+	"github.com/jackyczj/July/handler/order"
+
 	"github.com/jackyczj/July/handler/file"
 
 	"github.com/jackyczj/July/log"
@@ -11,6 +13,7 @@ import (
 	"github.com/jackyczj/July/handler/goods"
 
 	Auth "github.com/jackyczj/July/auth"
+	adminHandler "github.com/jackyczj/July/handler/admin"
 	cartHandler "github.com/jackyczj/July/handler/cart"
 	shopHandler "github.com/jackyczj/July/handler/shop"
 	"github.com/jackyczj/July/handler/user"
@@ -61,13 +64,15 @@ func Load(e *echo.Echo) {
 		Account.GET("/checkUsername/:key", user.CheckUsername)
 		Account.GET("/checkEmail/:key", user.CheckEmail)
 		Account.POST("/register", user.Register)
-
 	}
 	e.GET("/image/:filename", file.Image)
 
 	//Todo: ⬇️
 	api := e.Group("/api/v1")
-
+	User := api.Group("/Users")
+	{
+		User.GET("/address/:id", user.Address)
+	}
 	Goods := api.Group("/Goods")
 	{
 		Goods.GET("/index", goods.Index) //index goods list
@@ -92,39 +97,50 @@ func Load(e *echo.Echo) {
 
 	shopping := api.Group("/shop")
 	{
+		//Shop
 		shopping.GET("", shopHandler.List)
 		shopping.POST("/:id", shopHandler.Add)
-		shopping.DELETE("/:id", shopHandler.Delete)
+		shopping.GET("/Status", shopHandler.Status)
 
 		shopping.POST("/product/add", goods.Add)
 		shopping.DELETE("/product/:id", goods.Delete)
 		shopping.PUT("/product/:id", goods.Edit)
+
+		//取现
+		//shopping.POST("/takeMoney",shopHandler.TakeMoney)
 	}
 
-	//Order := api.Group("Order")
+	//pay := api.Group("/pay")
 	//{
-	//	Order.POST("/Create", order.Add)
-	//	Order.POST("/Pay", order.Pay)
-	//	Order.POST("/Consignment", order.Consignment)
-	//	Order.POST("/Confirm", order.Confirm)
-	//
-	//	Order.GET("/List",order.List)
-	//	Order.GET("/Get/:id",order.Get)
-	//	Order.DELETE("/Delete/:id",order.Delete)
-	//	Order.PUT("/Edit/:id",order.Edit)
-	//}
-	//admin := api.Group("/admin")
-	//{
-	//	//shop := admin.Group("/shop")
-	//	//{
-	//	//	shop.GET("/List",Admin.shopList)
-	//	//	shop.GET("/:id",Admin.shopInfo)
-	//	//	shop.POST("/close",Admin.shopClose)
-	//	//}
-	//	//user := admin.Group("/user")
-	//	//{
-	//	//
-	//	//}
-	//}
+	//	pay.POST("/:id",order.Pay)
+	//}12njk
+
+	Order := api.Group("Order")
+	{
+		Order.POST("/Create", order.Create)
+		//Order.POST("/Pay", order.Pay)
+		//Order.POST("/Consignment", order.Consignment)
+		//Order.POST("/Confirm", order.Confirm)
+
+		Order.GET("/List", order.List)
+		Order.GET("/Get/:id", order.Get)
+		Order.DELETE("/Delete/:id", order.Delete)
+		Order.PUT("/Edit/:id", order.Edit)
+	}
+
+	admin := api.Group("/admin")
+	{
+		admin.GET("/status", adminHandler.Status)
+		shop := admin.Group("/shop")
+		{
+			shop.GET("/List", adminHandler.ShopList)
+			shop.DELETE("/:id", shopHandler.Delete)
+			//shop.POST("/close",Admin.shopClose)
+		}
+		adminUser := admin.Group("/user")
+		{
+			adminUser.GET("/List", adminHandler.UserList)
+		}
+	}
 
 }

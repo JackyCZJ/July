@@ -33,13 +33,6 @@ type UserInformation struct {
 	Addresses []Address `json:"addresses,omitempty" bson:"addresses,omitempty"`
 }
 
-type Address struct {
-	Name      string   `json:"name"`
-	Addr      string   `json:"addr"`
-	Phone     string   `json:"phone"`
-	Residence []string `json:"residence"`
-}
-
 //创建用户
 func (u *UserInformation) Create() error {
 	var err error
@@ -215,4 +208,8 @@ func EmailExist(email string) bool {
 		return false
 	}
 	return true
+}
+
+func (u *UserInformation) GetUserAddressList() []Address {
+	return u.Addresses
 }

@@ -103,7 +103,13 @@ func Add(ctx echo.Context) error {
 	if err != nil {
 		return handler.ErrorResp(ctx, err, 404)
 	}
-	good.Owner = u.Username
+	var s store.Shop
+	s.Owner = u.Id
+	err = s.GetByOwner()
+	if err != nil {
+		return handler.ErrorResp(ctx, err, 404)
+	}
+	good.Owner = s.Id
 	form, err := ctx.MultipartForm()
 	if err != nil {
 		return err
@@ -165,7 +171,7 @@ func Delete(ctx echo.Context) error {
 	if err != nil {
 		return handler.ErrorResp(ctx, err, 500)
 	}
-	if p.Owner != u.Username {
+	if !CheckOwner(p.Owner, *u) {
 		return handler.Response(ctx, handler.ResponseStruct{
 			Code:    0,
 			Message: "Error delete, not your good ",
@@ -200,7 +206,14 @@ func Edit(ctx echo.Context) error {
 	if err != nil {
 		return handler.ErrorResp(ctx, err, 404)
 	}
-	if p.Owner != u.Username {
+
+	var s store.Shop
+	s.Id = p.Owner
+	err = s.Get()
+	if err != nil {
+		return handler.ErrorResp(ctx, err, 404)
+	}
+	if s.Owner != u.Id {
 		return handler.Response(ctx, handler.ResponseStruct{
 			Code:    0,
 			Message: "Error Update, not your good ",
@@ -255,4 +268,17 @@ func DelComment(ctx echo.Context) error {
 		return ctx.JSON(500, err)
 	}
 	return ctx.JSON(200, nil)
+}
+
+func CheckOwner(owner string, u store.UserInformation) bool {
+	var s store.Shop
+	s.Id = owner
+	err := s.Get()
+	if err != nil {
+		return false
+	}
+	if s.Owner != u.Id {
+		return false
+	}
+	return true
 }

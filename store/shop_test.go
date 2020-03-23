@@ -9,7 +9,7 @@ import (
 func TestShop_Create(t *testing.T) {
 	shop := Shop{
 		Name:        "测试小店",
-		Owner:       "JackyTest",
+		Owner:       32519,
 		CreateAt:    time.Now(),
 		Description: "测试用小店",
 		IsClose:     false,
@@ -45,4 +45,30 @@ func TestShopList(t *testing.T) {
 		t.Fatal(err)
 	}
 	fmt.Println(s, count)
+}
+
+func TestShop_Get(t *testing.T) {
+	shop := Shop{
+		Id: "5e775a8e6eeb4543911c2c03",
+	}
+	if shop.Get() != nil {
+		t.Fatal(shop.Get())
+	}
+	fmt.Println(shop)
+
+}
+
+func TestShop_ShopModify(t *testing.T) {
+	shop := Shop{
+		Id:          "5e775a8e6eeb4543911c2c03",
+		Name:        "测试小店2",
+		Owner:       32519,
+		CreateAt:    time.Now(),
+		Description: "测试用小店",
+		IsClose:     false,
+		IsDelete:    false,
+	}
+	if err := shop.ShopModify(); err != nil {
+		t.Fatal(err.Error())
+	}
 }

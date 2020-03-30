@@ -22,7 +22,7 @@ func TestCartAdd(t *testing.T) {
 		wantErr bool
 	}{
 		name: "test1", args: args{
-			id: 32519,
+			id: 23086,
 			product: Product{
 				ProductId: "1231",
 				Name:      "wtfww",
@@ -85,4 +85,19 @@ func TestCartDel(t *testing.T) {
 			}
 		})
 	}
+}
+
+func TestCartClear(t *testing.T) {
+	err := CartClear(23086)
+	if err != nil {
+		t.Fatal(err)
+	}
+}
+
+func TestCartList(t *testing.T) {
+	ca, err := CartList(23086)
+	if err != nil {
+		t.Fatal(err)
+	}
+	t.Log(ca)
 }

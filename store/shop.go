@@ -234,9 +234,9 @@ func (s *Shop) Status() (*ShopStatus, error) {
 	result, err := Client.db.Collection("Order").Find(context.TODO(), filter)
 	if err != nil {
 		if err != mongo.ErrNoDocuments {
-
+			return nil, err
 		}
-		return nil, err
+		return &status, nil
 	}
 	err = result.Decode(&OrderList)
 	if err != nil {

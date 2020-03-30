@@ -19,7 +19,7 @@ func TestOrder_Create(t *testing.T) {
 		PaymentType: 0,
 		ShippingTo:  0,
 		Item:        nil,
-		CreateTime:  time.Now(),
+		CreateAt:    time.Now(),
 		Status:      "3",
 		TrackingNum: "123091823701983",
 	}

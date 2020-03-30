@@ -8,6 +8,7 @@ import (
 	"github.com/labstack/echo/v4"
 )
 
+//创建一个商店，并为商店所有者提权为商家
 func Add(ctx echo.Context) error {
 	s := store.Shop{}
 	err := ctx.Bind(&s)

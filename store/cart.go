@@ -89,3 +89,37 @@ func CartDel(id int32, product ...Product) error {
 	}
 	return nil
 }
+
+func CartClear(id int32) error {
+	var cart Cart
+	cart.Owner = id
+	filter, err := utils.StructToBson(cart)
+	if err != nil {
+		return err
+	}
+	update := bson.D{
+		{
+			Key: "$set",
+			Value: bson.D{
+				{
+					"item", []item{},
+				},
+			},
+		},
+	}
+	return Client.db.Collection("cart").FindOneAndUpdate(context.TODO(), filter, update).Err()
+}
+
+func CartList(id int32) (*Cart, error) {
+	var cart Cart
+	cart.Owner = id
+	filter, err := utils.StructToBson(cart)
+	if err != nil {
+		return nil, err
+	}
+	err = Client.db.Collection("cart").FindOne(context.TODO(), filter).Decode(&cart)
+	if err != nil {
+		return nil, err
+	}
+	return &cart, nil
+}

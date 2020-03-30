@@ -35,6 +35,7 @@ func Skipper(c echo.Context) bool {
 	}
 	switch path {
 	case "",
+		"/api/v1/Shop/List",
 		"/api/v1/Goods/index":
 		return true
 	}

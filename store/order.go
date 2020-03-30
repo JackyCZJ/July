@@ -34,12 +34,12 @@ type Order struct {
 	PaymentType int       `json:"payment_type" bson:"payment_type,omitempty" `
 	ShippingTo  int       `json:"shipping_to" bson:"shipping_to,omitempty"`
 	Item        []Item    `json:"item" bson:"item,omitempty"`
-	CreateTime  time.Time `json:"create_time" bson:"create_time,omitempty"`
+	CreateAt    time.Time `json:"create_at" bson:"create_at,omitempty"`
 	Status      string    `json:"status" bson:"status,omitempty"`
 	TrackingNum string    `json:"tracking_num" bson:"tracking_num,omitempty"`
 	IsClose     bool      `json:"is_close"`
-	EndTime     time.Time `json:"end_time"`
-	SendTime    time.Time `json:"send_time"`
+	EndAt       time.Time `json:"end_at"`
+	SendAt      time.Time `json:"send_at"`
 }
 
 type Item struct {

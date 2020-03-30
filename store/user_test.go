@@ -20,7 +20,7 @@ func init() {
 }
 func TestUserInformation_Create(t *testing.T) {
 	ui := UserInformation{
-		Username: "JackyTest3",
+		Username: "JackyTest",
 		Password: "wtfIsPassword",
 		Email:    "test@test.com",
 		Role:     2,

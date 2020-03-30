@@ -144,7 +144,7 @@ func Register(e echo.Context) error {
 	a := new(store.Address)
 	a.Phone = u.Phone
 	a.Name = "默认地址"
-	a.Area = r.Residence[3]
+	a.Area = r.Residence[2]
 	a.Address = r.Address
 	a.UserID = u.Id
 	u.Addresses = append(u.Addresses, *a)
@@ -270,19 +270,13 @@ func VailEmail(email string) bool {
 }
 
 func Address(ctx echo.Context) error {
-	//fuck safe
-	id := ctx.Param("id")
-	i, err := strconv.Atoi(id)
-	if err != nil {
-		return handler.ErrorResp(ctx, err, 500)
-	}
+	id := ctx.Get("user_id")
 	var u store.UserInformation
-	u.Id = int32(i)
-	_, err = u.GetUser()
+	u.Id = id.(int32)
+	_, err := u.GetUser()
 	if err != nil {
 		return handler.ErrorResp(ctx, err, 404)
 	}
-
 	return handler.Response(ctx, handler.ResponseStruct{
 		Code:    0,
 		Message: "",

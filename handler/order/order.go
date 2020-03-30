@@ -35,7 +35,7 @@ func Create(ctx echo.Context) error {
 	for _, v := range O.OrderList {
 		var s store.Order
 		s.Buyer = u.Id
-		s.CreateTime = time.Now().UTC()
+		s.CreateAt = time.Now()
 		s.Payment = v.Product.Price * float64(v.Count)
 		s.Status = UnPay
 		s.IsClose = false
@@ -127,4 +127,8 @@ func Edit(ctx echo.Context) error {
 		Message: "",
 		Data:    nil,
 	})
+}
+
+func Cancel(ctx echo.Context) error {
+	return nil
 }

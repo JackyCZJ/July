@@ -71,7 +71,9 @@ func Load(e *echo.Echo) {
 	api := e.Group("/api/v1")
 	User := api.Group("/Users")
 	{
-		User.GET("/address/:id", user.Address)
+		User.GET("/information", user.Get)
+		User.POST("/information", user.Set)
+		User.GET("/address", user.Address)
 	}
 	Goods := api.Group("/Goods")
 	{

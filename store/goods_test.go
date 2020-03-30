@@ -18,15 +18,20 @@ func TestProduct_Add(t *testing.T) {
 		Store:    10,
 		Price:    1213,
 		Off:      1223,
-		Owner:    "57606",
+		Owner:    "5e788d61234cca37ca522ee6",
 		CreateAt: time.Now(),
 		Shelves:  true,
 	}
-
-	err := p.Add()
-	if err != nil {
-		t.Fatal(err)
+	for i := 0; i < 10; i++ {
+		p.Price += 1
+		p.Store += 1
+		p.Name = fmt.Sprintf("awsl%v", i)
+		err := p.Add()
+		if err != nil {
+			t.Fatal(err)
+		}
 	}
+
 }
 
 func TestSearch(t *testing.T) {

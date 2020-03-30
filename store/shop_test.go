@@ -9,7 +9,7 @@ import (
 func TestShop_Create(t *testing.T) {
 	shop := Shop{
 		Name:        "测试小店",
-		Owner:       32519,
+		Owner:       29677,
 		CreateAt:    time.Now(),
 		Description: "测试用小店",
 		IsClose:     false,

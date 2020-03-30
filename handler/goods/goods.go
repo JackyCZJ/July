@@ -21,13 +21,16 @@ import (
 
 func Search(ctx echo.Context) error {
 	search := struct {
-		Keyword string          `query:"keyword"`
-		Page    int             `query:"page"`
-		PerPage int             `query:"PerPage"`
+		Keyword string          `json:"keyword" query:"keyword"`
+		Page    int             `json:"page" query:"page"`
+		PerPage int             `json:"per_page" query:"PerPage"`
 		Total   int             `json:"total"`
 		Data    []store.Product `json:"data"`
 	}{}
-	_ = ctx.Bind(search)
+	err := ctx.Bind(&search)
+	if err != nil {
+		return handler.ErrorResp(ctx, err, 404)
+	}
 	key := search.Keyword
 	page := search.Page
 	perPage := search.PerPage

@@ -3,6 +3,8 @@ package shop
 import (
 	"fmt"
 
+	"go.mongodb.org/mongo-driver/mongo"
+
 	"github.com/jackyczj/July/handler"
 	"github.com/jackyczj/July/store"
 	"github.com/labstack/echo/v4"
@@ -10,13 +12,30 @@ import (
 
 //创建一个商店，并为商店所有者提权为商家
 func Add(ctx echo.Context) error {
+	id := ctx.Get("user_id").(int32)
 	s := store.Shop{}
-	err := ctx.Bind(&s)
-	if err != nil {
-		return err
+	s.Owner = id
+	err := s.Get()
+	if err == mongo.ErrNoDocuments {
+		err = ctx.Bind(&s)
+		if err != nil {
+			return err
+		}
+		err = s.Create()
+		if err != nil {
+			return handler.ErrorResp(ctx, err, 500)
+		}
+		return handler.Response(ctx, handler.ResponseStruct{
+			Code:    0,
+			Message: "",
+			Data:    nil,
+		})
 	}
-	return s.Create()
 
+	if err != nil {
+		return handler.ErrorResp(ctx, err, 500)
+	}
+	return handler.ErrorResp(ctx, fmt.Errorf("你已经有一家店铺了"), 403)
 }
 
 func Delete(ctx echo.Context) error {
@@ -40,12 +59,12 @@ func Delete(ctx echo.Context) error {
 
 func List(ctx echo.Context) error {
 	shopList := struct {
-		Page    int          `query:"page"`
-		PerPage int          `query:"PerPage"`
+		Page    int          `json:"page" query:"page"`
+		PerPage int          `json:"per_page" query:"PerPage"`
 		Total   int          `json:"total"`
 		Data    []store.Shop `json:"data"`
 	}{}
-	_ = ctx.Bind(shopList)
+	_ = ctx.Bind(&shopList)
 	data, total, err := store.ShopList(shopList.Page, shopList.PerPage)
 	if err != nil {
 		return handler.ErrorResp(ctx, err, 404)
@@ -62,13 +81,17 @@ func List(ctx echo.Context) error {
 
 func Search(ctx echo.Context) error {
 	search := struct {
-		Keyword string       `query:"keyword"`
-		Page    int          `query:"page"`
-		PerPage int          `query:"PerPage"`
+		Keyword string       `json:"keyword" query:"keyword"`
+		Page    int          `json:"page" query:"page"`
+		PerPage int          `json:"per_page" query:"PerPage"`
 		Total   int          `json:"total"`
 		Data    []store.Shop `json:"data"`
 	}{}
-	_ = ctx.Bind(search)
+	err := ctx.Bind(&search)
+	if err != nil {
+		fmt.Println(err.Error())
+		return handler.ErrorResp(ctx, err, 404)
+	}
 	key := search.Keyword
 	page := search.Page
 	perPage := search.PerPage

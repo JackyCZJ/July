@@ -63,6 +63,7 @@ func Clear(ctx echo.Context) error {
 }
 
 //🛒 List
+
 func List(ctx echo.Context) error {
 	id := ctx.Get("user_id").(int32)
 	cart, err := store.CartList(id)
@@ -74,8 +75,4 @@ func List(ctx echo.Context) error {
 		Message: "",
 		Data:    cart,
 	})
-}
-
-func Get(ctx echo.Context) error {
-	return nil
 }

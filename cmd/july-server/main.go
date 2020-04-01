@@ -7,8 +7,6 @@ import (
 	"github.com/jackyczj/July/log"
 	"github.com/spf13/viper"
 
-	"golang.org/x/crypto/acme/autocert"
-
 	"github.com/spf13/pflag"
 
 	"github.com/jackyczj/July/config"
@@ -67,10 +65,10 @@ func main() {
 			panic(err)
 		}
 	}()
-	go func(e *echo.Echo) {
-		e.AutoTLSManager.Cache = autocert.DirCache("/conf")
-		e.Logger.Fatal("TLS service start at port:", e.StartAutoTLS(":443"))
-	}(e)
+	//go func(e *echo.Echo) {
+	//	e.AutoTLSManager.Cache = autocert.DirCache("/conf")
+	//	e.Logger.Fatal("TLS service start at port:", e.StartAutoTLS(":443"))
+	//}(e)
 	e.Logger.Fatal("Service start at port:", e.Start(":2333"))
 
 }

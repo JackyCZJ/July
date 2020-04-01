@@ -9,7 +9,7 @@ import (
 func TestProduct_Add(t *testing.T) {
 	p := Product{
 		Name:        "awsl",
-		ImageUri:    []string{"https://via.placeholder.com/150", "https://via.placeholder.com/200"},
+		ImageUri:    []string{"http://localhost:2333/image/5e808b33b5e26ddfb46164b9", "http://localhost:2333/image/5e8321dfd95740e6bdba977f"},
 		Description: "dfkjalkdfj;a",
 		Information: Type{
 			"不知道啥",
@@ -22,9 +22,10 @@ func TestProduct_Add(t *testing.T) {
 		CreateAt: time.Now(),
 		Shelves:  true,
 	}
-	for i := 0; i < 10; i++ {
-		p.Price += 1
-		p.Store += 1
+	for i := 3000; i < 100000; i++ {
+		p.Price = 2333
+		p.Store = 2333
+		p.CreateAt = time.Now()
 		p.Name = fmt.Sprintf("awsl%v", i)
 		err := p.Add()
 		if err != nil {

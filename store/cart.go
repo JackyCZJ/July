@@ -15,8 +15,9 @@ import (
 )
 
 type item struct {
-	ProductId string `bson:"product_id"`
-	Count     int    `bson:"count,omitempty"`
+	ProductId string  `json:"_" bson:"product_id"`
+	Product   Product `bson:"_"`
+	Count     int     `bson:"count,omitempty"`
 }
 
 type Cart struct {
@@ -120,6 +121,13 @@ func CartList(id int32) (*Cart, error) {
 	err = Client.db.Collection("cart").FindOne(context.TODO(), filter).Decode(&cart)
 	if err != nil {
 		return nil, err
+	}
+	for i := range cart.Item {
+		var p = cart.Item[i].ProductId
+		var pd Product
+		pd.ProductId = p
+		_ = pd.Get()
+		cart.Item[i].Product = pd
 	}
 	return &cart, nil
 }

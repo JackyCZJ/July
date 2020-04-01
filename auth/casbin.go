@@ -1,6 +1,7 @@
 package auth
 
 import (
+	"fmt"
 	"net/http"
 	"strconv"
 
@@ -58,22 +59,13 @@ func Middleware(ce *casbin.Enforcer) echo.MiddlewareFunc {
 }
 
 func (a *Config) CheckPermission(e echo.Context) (bool, error) {
-	user := e.Get("user_id")
 	role := e.Get("role")
-	if user == nil || role == nil {
-		user = "guest"
-		_, err := a.Enforcer.AddRoleForUser(user.(string), "0")
-		if err != nil {
-			return false, err
-		}
+	if role == nil {
+		role = 0
 	}
-	role = strconv.Itoa(role.(int))
-
-	_, err := a.Enforcer.AddRoleForUser(user.(string), role.(string))
-	if err != nil {
-		return false, err
-	}
+	r := strconv.Itoa(role.(int))
 	method := e.Request().Method
 	path := e.Request().URL.Path
-	return a.Enforcer.Enforce(role, path, method)
+	fmt.Println(r, method, path)
+	return a.Enforcer.Enforce(r, path, method)
 }

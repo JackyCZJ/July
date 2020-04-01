@@ -1,5 +1,12 @@
 p , 3 , /*, (GET|POST|PUT|DELETE)
 
+p , 0 , /admin/auth/login , POST
+
+p , 0 , /cate/* , GET
+p , 1 , /cate/*, GET
+p , 2 , /cate/* , (GET|POST|PUT|DELETE)
+p , 3,  /cate/* , (GET|POST|PUT|DELETE)
+
 p , 0 , /user/login , POST
 p , 0 , /user/register , POST
 
@@ -25,8 +32,14 @@ p, 2 , /api/v1/Shop/* , (GET|POST|PUT|DELETE)
 p, 2 , /api/v1/Shop/setting/* ,  (GET|POST|PUT|DELETE)
 
 
-p, 0 , /api/v1/Cart ,  (GET|POST|PUT|DELETE)
-p, 1 , /api/v1/Cart ,  (GET|POST|PUT|DELETE)
-p, 2 , /api/v1/Cart ,  (GET|POST|PUT|DELETE)
+p, 1 , /api/v1/Cart/* ,  GET
+p, 1 , /api/v1/Cart/* ,  POST
+p, 1 , /api/v1/Cart/* ,  DELETE
+p, 1 , /api/v1/Cart/* ,  PUT
+
+p, 2 , /api/v1/Cart/* ,  GET
+p, 2 , /api/v1/Cart/* ,  POST
+p, 2 , /api/v1/Cart/* ,  DELETE
+p, 2 , /api/v1/Cart/* ,  PUT
 
 

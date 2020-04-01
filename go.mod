@@ -4,6 +4,7 @@ go 1.12
 
 require (
 	github.com/DataDog/zstd v1.3.6-0.20190409195224-796139022798 // indirect
+	github.com/casbin/casbin v1.9.1
 	github.com/casbin/casbin/v2 v2.2.1
 	github.com/dgrijalva/jwt-go v3.2.0+incompatible
 	github.com/fsnotify/fsnotify v1.4.7

@@ -1,6 +1,15 @@
 package store
 
-import "context"
+import (
+	"context"
+	"time"
+
+	"go.mongodb.org/mongo-driver/bson"
+
+	"go.mongodb.org/mongo-driver/mongo/options"
+
+	"go.mongodb.org/mongo-driver/mongo"
+)
 
 //返回总人数，总订单数，总商品数
 type Status struct {
@@ -11,16 +20,29 @@ type Status struct {
 }
 
 func StatusGet() (*Status, error) {
-	Order, err := Client.db.Collection("Order").CountDocuments(context.TODO(), nil)
-	if err != nil {
+	opts := options.Count().SetMaxTime(2 * time.Second)
+	Order, err := Client.db.Collection("order").CountDocuments(context.TODO(), bson.M{}, opts)
+	switch err {
+	case mongo.ErrNilDocument:
+		Order = 0
+	case nil:
+	default:
 		return nil, err
 	}
-	Goods, err := Client.db.Collection("goods").CountDocuments(context.TODO(), nil)
-	if err != nil {
+	Goods, err := Client.db.Collection("good").CountDocuments(context.TODO(), bson.M{}, opts)
+	switch err {
+	case mongo.ErrNilDocument:
+		Goods = 0
+	case nil:
+	default:
 		return nil, err
 	}
-	User, err := Client.db.Collection("user").CountDocuments(context.TODO(), nil)
-	if err != nil {
+	User, err := Client.db.Collection("user").CountDocuments(context.TODO(), bson.M{}, opts)
+	switch err {
+	case mongo.ErrNilDocument:
+		User = 0
+	case nil:
+	default:
 		return nil, err
 	}
 	var s Status

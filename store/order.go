@@ -51,6 +51,8 @@ var err error
 
 //订单创建
 func (o *Order) Create() error {
+	id := primitive.NewObjectID()
+	o.OrderNo = id.Hex()
 	ctx, cancel := context.WithTimeout(context.TODO(), 3*time.Second)
 	defer cancel()
 	_, err = Client.db.Collection("order").InsertOne(ctx, o)

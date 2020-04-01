@@ -105,12 +105,9 @@ func ShopList(pageNumber int, PerPage int) ([]Shop, int, error) {
 	opt.SetLimit(int64(PerPage))
 	var shopList []Shop
 
-	filter := bson.D{
-		{Key: "is_delete", Value: false},
-	}
-	count, _ := Client.db.Collection("shop").CountDocuments(context.TODO(), filter)
+	count, _ := Client.db.Collection("shop").CountDocuments(context.TODO(), bson.M{})
 
-	result, err := Client.db.Collection("shop").Find(context.TODO(), filter, &opt)
+	result, err := Client.db.Collection("shop").Find(context.TODO(), bson.M{}, &opt)
 	if err != nil {
 		if err == mongo.ErrNoDocuments {
 			return shopList, 0, nil
@@ -222,25 +219,30 @@ const COMMENTED = "4"
 
 //获取商店状态
 func (s *Shop) Status() (*ShopStatus, error) {
-	filter := bson.D{
-		{"owner", s.Owner},
-	}
 	var status ShopStatus
 	var OrderList []Order
 	if s.Get() != nil {
 		return nil, err
 	}
 	status.Shop = *s
-	result, err := Client.db.Collection("Order").Find(context.TODO(), filter)
+	filter := bson.D{
+		{"seller", s.Id},
+	}
+	result, err := Client.db.Collection("order").Find(context.TODO(), filter)
 	if err != nil {
 		if err != mongo.ErrNoDocuments {
 			return nil, err
 		}
 		return &status, nil
 	}
-	err = result.Decode(&OrderList)
-	if err != nil {
-		return nil, err
+	//err = result.Decode(&OrderList)
+	for result.Next(context.TODO()) {
+		var O Order
+		err = result.Decode(&O)
+		if err != nil {
+			return nil, err
+		}
+		OrderList = append(OrderList, O)
 	}
 	for i := range OrderList {
 		switch OrderList[i].Status {

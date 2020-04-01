@@ -1,7 +1,10 @@
 package main
 
 import (
+	"fmt"
 	"net/http"
+
+	"github.com/jackyczj/July/handler/cate"
 
 	"github.com/jackyczj/July/handler/order"
 
@@ -77,6 +80,8 @@ func Load(e *echo.Echo) {
 	}
 	Goods := api.Group("/Goods")
 	{
+		fmt.Println("➡️ inject goods api")
+
 		Goods.GET("/index", goods.Index) //index goods list
 		Goods.GET("/:id", goods.Get)
 		Goods.GET("/search/*", goods.Search)
@@ -87,38 +92,43 @@ func Load(e *echo.Echo) {
 		Goods.POST("/comment/:id", goods.Comment)
 		Goods.DELETE("/comment/:id", goods.DelComment)
 	}
-	cart := api.Group("/cart")
+	Cart := api.Group("/Cart")
 	{
-		cart.GET("", cartHandler.List)    //获取所有购物车
-		cart.GET("/:id", cartHandler.Get) //获取购物车内的单件商品
-		cart.POST("/", cartHandler.Add)   //添加入购物车
-		cart.PUT("/", cartHandler.Add)    //修改某样商品的数量
-		cart.DELETE("/:id", cartHandler.Delete)
-		cart.POST("/clear", cartHandler.Clear) //清空购物车
+		fmt.Println("➡️ inject cart api")
+		Cart.GET("/List", cartHandler.List) //获取所有购物车
+		Cart.POST("/Add", cartHandler.Add)  //添加入购物车
+		Cart.PUT("/Edit", cartHandler.Add)  //修改某样商品的数量
+		Cart.DELETE("/:id", cartHandler.Delete)
+		Cart.POST("/clear", cartHandler.Clear) //清空购物车
 	}
 
-	shopping := api.Group("/shop")
+	Shop := api.Group("/Shop")
 	{
 		//Shop
-		shopping.GET("", shopHandler.List)
-		shopping.POST("/:id", shopHandler.Add)
-		shopping.GET("/Status", shopHandler.Status)
+		fmt.Println("➡️ inject shop api")
+		Shop.GET("/search/*", shopHandler.Search)
+		Shop.GET("/list", shopHandler.List)
+		Shop.POST("/:id", shopHandler.Add)
+		Shop.GET("/status/:id", shopHandler.Status)
 
-		shopping.POST("/product/add", goods.Add)
-		shopping.DELETE("/product/:id", goods.Delete)
-		shopping.PUT("/product/:id", goods.Edit)
+		Shop.POST("/product/add", goods.Add)
+		Shop.DELETE("/product/:id", goods.Delete)
+		Shop.PUT("/product/:id", goods.Edit)
 
 		//取现
 		//shopping.POST("/takeMoney",shopHandler.TakeMoney)
 	}
 
-	//pay := api.Group("/pay")
-	//{
-	//	pay.POST("/:id",order.Pay)
-	//}12njk
+	Cate := api.Group("Cate")
+	{
+		Cate.GET("/:id", cate.Get)
+		Cate.POST("/add", cate.Add)
+		Cate.DELETE("/delete", cate.Delete)
+	}
 
 	Order := api.Group("Order")
 	{
+		fmt.Println("➡️ inject order api")
 		Order.POST("/Create", order.Create)
 		//Order.POST("/Pay", order.Pay)
 		//Order.POST("/Consignment", order.Consignment)
@@ -130,8 +140,11 @@ func Load(e *echo.Echo) {
 		Order.PUT("/Edit/:id", order.Edit)
 	}
 
-	admin := api.Group("/admin")
+	admin := e.Group("/admin")
 	{
+		fmt.Println("➡️ inject admin api")
+		admin.POST("/auth/login", user.Login)
+		admin.GET("/auth/self", user.Get)
 		admin.GET("/status", adminHandler.Status)
 		shop := admin.Group("/shop")
 		{
@@ -139,9 +152,9 @@ func Load(e *echo.Echo) {
 			shop.DELETE("/:id", shopHandler.Delete)
 			//shop.POST("/close",Admin.shopClose)
 		}
-		adminUser := admin.Group("/user")
+		adminUser := admin.Group("/users")
 		{
-			adminUser.GET("/List", adminHandler.UserList)
+			adminUser.GET("/list", adminHandler.UserList)
 		}
 	}
 

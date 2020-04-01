@@ -20,7 +20,8 @@ func Skipper(c echo.Context) bool {
 	case
 		"/user/login",
 		"/user/register",
-		"/captcha":
+		"/captcha",
+		"/admin/auth/login":
 		return true
 	}
 	// 从这里开始必须是GET方法
@@ -33,9 +34,11 @@ func Skipper(c echo.Context) bool {
 	if strings.HasPrefix(path, "/api/v1/Goods/") {
 		return true
 	}
+	if strings.HasPrefix(path, "/api/v1/Shop/search") {
+		return true
+	}
 	switch path {
-	case "",
-		"/api/v1/Shop/List",
+	case "/api/v1/Shop/list",
 		"/api/v1/Goods/index":
 		return true
 	}

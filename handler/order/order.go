@@ -132,3 +132,7 @@ func Edit(ctx echo.Context) error {
 func Cancel(ctx echo.Context) error {
 	return nil
 }
+
+func Confirm(ctx echo.Context) error {
+	return nil
+}

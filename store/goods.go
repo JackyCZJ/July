@@ -140,7 +140,7 @@ func GetRandom() ([]bson.M, error) {
 				{
 					Key: "$sample",
 					Value: bson.D{
-						{Key: "size", Value: 10},
+						{Key: "size", Value: 12},
 					},
 				},
 			},

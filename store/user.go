@@ -25,8 +25,9 @@ import (
 type UserInformation struct {
 	Id        int32     `json:"id,omitempty" bson:"id,omitempty"`
 	Username  string    `json:"username" validate:"min=1,max=32" bson:"username,omitempty"`
-	Password  string    `json:"-,omitempty" validate:"min=1,max=32" bson:"password,omitempty"`
+	Password  string    `json:"_,omitempty" validate:"min=1,max=32" bson:"password,omitempty"`
 	Email     string    `json:"email,omitempty"  bson:"email,omitempty"`
+	Avatar    string    `json:"avatar" bson:"avatar,omitempty"`
 	Phone     string    `json:"phone,omitempty" bson:"phone,omitempty"`
 	Role      int       `json:"role,omitempty" bson:"role,omitempty"`
 	Gander    int       `json:"gander,omitempty" bson:"gander,omitempty"`
@@ -158,9 +159,9 @@ func UserList(pageNumber int, PerPage int) ([]UserInformation, int, error) {
 	opt.SetLimit(int64(PerPage))
 	var userList []UserInformation
 
-	count, _ := Client.db.Collection("shop").CountDocuments(context.TODO(), nil)
+	count, _ := Client.db.Collection("user").CountDocuments(context.TODO(), bson.M{})
 
-	result, err := Client.db.Collection("shop").Find(context.TODO(), nil, &opt)
+	result, err := Client.db.Collection("user").Find(context.TODO(), bson.M{}, &opt)
 	if err != nil {
 		if err == mongo.ErrNoDocuments {
 			return userList, 0, nil

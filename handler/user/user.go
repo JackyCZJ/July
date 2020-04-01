@@ -4,7 +4,6 @@ import (
 	"fmt"
 	"net/http"
 	"regexp"
-	"strconv"
 	"time"
 
 	"github.com/jackyczj/July/cache"
@@ -25,7 +24,7 @@ type Token struct {
 	Token     string    `json:"token"`
 	ExpiresAt time.Time `json:"expires_at"`
 	Role      int       `json:"role"`
-	UserID    string    `json:"-"`
+	UserID    int32     `json:"-"`
 	Username  string    `json:"username"`
 }
 
@@ -84,7 +83,7 @@ func Login(e echo.Context) error {
 		Token:     utils.NewUUID(),
 		ExpiresAt: time.Now().Add(time.Hour * 76),
 		Role:      u.Role,
-		UserID:    strconv.FormatUint(uint64(u.Id), 10),
+		UserID:    u.Id,
 		Username:  u.Username,
 	}
 	cache.SetCc("token:"+t.Token, t, time.Hour*76)
@@ -166,7 +165,7 @@ func Register(e echo.Context) error {
 		Token:     utils.NewUUID(),
 		ExpiresAt: time.Now().Add(time.Hour * 76),
 		Role:      u.Role,
-		UserID:    strconv.FormatUint(uint64(u.Id), 10),
+		UserID:    u.Id,
 		Username:  u.Username,
 	}
 	cache.SetCc("token:"+t.Token, t, time.Hour*76)
@@ -217,7 +216,12 @@ func Get(e echo.Context) error {
 		return echo.NewHTTPError(401, "Get user information fail")
 	}
 	u.Password = ""
-	return e.JSON(200, u)
+
+	return handler.Response(e, handler.ResponseStruct{
+		Code:    0,
+		Message: "",
+		Data:    u,
+	})
 }
 
 func Set(e echo.Context) error {

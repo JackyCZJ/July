@@ -7,18 +7,21 @@ import (
 )
 
 func TestShop_Create(t *testing.T) {
-	shop := Shop{
-		Name:        "测试小店",
-		Owner:       29677,
-		CreateAt:    time.Now(),
-		Description: "测试用小店",
-		IsClose:     false,
-		IsDelete:    false,
+	for i := 5; i < 10; i++ {
+		shop := Shop{
+			Name:        fmt.Sprintf("测试小店%v", i),
+			Owner:       23086,
+			CreateAt:    time.Now(),
+			Description: "测试用小店",
+			IsClose:     false,
+			IsDelete:    false,
+		}
+		err := shop.Create()
+		if err != nil {
+			t.Fatal(err)
+		}
 	}
-	err := shop.Create()
-	if err != nil {
-		t.Fatal(err)
-	}
+
 }
 
 func TestShop_Delete(t *testing.T) {
@@ -71,4 +74,10 @@ func TestShop_ShopModify(t *testing.T) {
 	if err := shop.ShopModify(); err != nil {
 		t.Fatal(err.Error())
 	}
+}
+
+func TestShopList1(t *testing.T) {
+	_, count, err := ShopList(1, 1)
+	fmt.Println(err)
+	fmt.Println(count)
 }

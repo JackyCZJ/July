@@ -33,7 +33,7 @@ func ShopList(ctx echo.Context) error {
 func Status(ctx echo.Context) error {
 	s, err := store.StatusGet()
 	if err != nil {
-		return handler.ErrorResp(ctx, err, 500)
+		return handler.ErrorResp(ctx, err, 404)
 	}
 	return handler.Response(ctx, handler.ResponseStruct{
 		Code:    0,
@@ -51,7 +51,8 @@ func UserList(ctx echo.Context) error {
 	}{}
 	err := ctx.Bind(&resq)
 	if err != nil {
-		return handler.ErrorResp(ctx, err, 500)
+		resq.Page = 1
+		resq.PerPage = 10
 	}
 	userList, total, err := store.UserList(resq.Page, resq.PerPage)
 	if err != nil {

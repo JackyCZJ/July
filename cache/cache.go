@@ -24,57 +24,10 @@ var (
 
 // 初始化缓存
 func InitCache() {
-	//addrSlice := viper.GetStringSlice("redis.cluster")
-	//Ring = redis.NewRing(&redis.RingOptions{
-	//	Addrs: addrMap,
-	//	DB:    0,
-	//})
 	opt := redis.Options{
 		Addr: "redis1:6379",
 	}
 	client := redis.NewClient(&opt)
-	//opt := redis.ClusterOptions{}
-	//addrSlice := viper.GetStringSlice("redis.cluster")
-	//opt.RouteRandomly = true
-	//opt.ClusterSlots = func() ([]redis.ClusterSlot, error) {
-	//	slots := []redis.ClusterSlot{{
-	//		Start: 0,
-	//		End:   4999,
-	//		Nodes: []redis.ClusterNode{{
-	//			ID:   "",
-	//			Addr: addrSlice[0],
-	//		}, {
-	//			ID:   "",
-	//			Addr: addrSlice[3],
-	//		},
-	//		},
-	//	}, {
-	//		Start: 5000,
-	//		End:   9999,
-	//		Nodes: []redis.ClusterNode{{
-	//			ID:   "",
-	//			Addr: addrSlice[1],
-	//		}, {
-	//			ID:   "",
-	//			Addr: addrSlice[4],
-	//		}},
-	//	}, {
-	//		Start: 10000,
-	//		End:   16383,
-	//		Nodes: []redis.ClusterNode{{
-	//			ID:   "",
-	//			Addr: addrSlice[2],
-	//		}, {
-	//			ID:   "",
-	//			Addr: addrSlice[5],
-	//		}},
-	//	}}
-	//	return slots, nil
-	//}
-	//Cluster = redis.NewClusterClient(&opt)
-	//ring := redis.NewRing(&redis.RingOptions{
-	//	Addrs: viper.GetStringMapString("redis.docker_cluster"),
-	//})
 	Client = client
 	cc = &cache.Codec{
 		Redis: client,

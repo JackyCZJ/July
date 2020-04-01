@@ -22,19 +22,9 @@ func TestCartAdd(t *testing.T) {
 		wantErr bool
 	}{
 		name: "test1", args: args{
-			id: 23086,
+			id: 31209,
 			product: Product{
-				ProductId: "1231",
-				Name:      "wtfww",
-				ImageUri:  []string{"http://wtf.img"},
-				Information: Type{
-					Category: "wtf",
-					Brand:    "wtf",
-				},
-				Price:    999,
-				Off:      25,
-				Owner:    "12312",
-				CreateAt: time.Now(),
+				ProductId: "5e832e5b041c8d2f73392b20",
 			},
 			count: 3,
 		}, wantErr: false})

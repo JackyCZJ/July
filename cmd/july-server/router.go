@@ -115,16 +115,18 @@ func Load(e *echo.Echo) {
 		Shop.POST("/product/add", goods.Add)
 		Shop.DELETE("/product/:id", goods.Delete)
 		Shop.PUT("/product/:id", goods.Edit)
-		Shop.GET("/product/:page", goods.ProductList)
+		Shop.GET("/product/:id", goods.ProductListByShop)
+		Shop.GET("/product/search/*", goods.SearchInShop)
 
 		//取现
 		//shopping.POST("/takeMoney",shopHandler.TakeMoney)
 	}
 
-	Cate := api.Group("/Cate")
+	Cate := api.Group("/Category")
 	{
 		Cate.GET("/:id", cate.Get)
 		Cate.POST("/add", cate.Add)
+		Cate.GET("/List/:shop", cate.List)
 		Cate.DELETE("/delete", cate.Delete)
 	}
 

@@ -1,4 +1,5 @@
 # July
+![Go](https://github.com/JackyCZJ/July/workflows/Go/badge.svg)
 An api server,base on echo . With mongodb store and cache with redis.
 
 我的毕业设计，想的很丰满现实很骨感的破实现。目前还在整后端，前端有点难受。

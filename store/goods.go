@@ -301,6 +301,97 @@ func Suggestion(keyword string) []string {
 	return resultGroup
 }
 
+func SearchInShop(shop, keyword string, role bool, page int) ([]Product, int64) {
+	var pList []Product
+	filter := bson.D{{Key: "owner", Value: shop}}
+	if role {
+		filter = bson.D{{
+			Key: "$and",
+			Value: bson.D{
+				{Key: "name", Value: primitive.Regex{
+					Pattern: keyword,
+					Options: "",
+				}},
+				{Key: "owner", Value: shop},
+				{Key: "shelves", Value: false}},
+		}}
+	}
+	opt := options.Find()
+	if page > 0 {
+		page = (page - 1) * 10
+	} else {
+		page = 0
+	}
+	fmt.Println(shop, page)
+	opt.SetSkip(int64(page))
+	opt.SetLimit(10)
+	total, _ := Client.db.Collection("good").CountDocuments(context.TODO(), filter)
+	pagenumber := total / 10
+	result, err := Client.db.Collection("good").Find(context.TODO(), filter, opt)
+	if err != nil {
+		return nil, 0
+	}
+	for result.Next(context.TODO()) {
+		var p Product
+		err := result.Decode(&p)
+		if err != nil {
+			return nil, 0
+		}
+		pList = append(pList, p)
+	}
+	return pList, pagenumber
+}
+
+func SearchInShopById(shop, keyword string, role bool, page int) ([]Product, int64) {
+	var pList []Product
+	filter := bson.D{{
+		Key: "$and",
+		Value: bson.D{
+			{Key: "_id", Value: primitive.Regex{
+				Pattern: keyword,
+				Options: "",
+			}},
+			{Key: "owner", Value: shop},
+			{Key: "shelves", Value: true}},
+	}}
+	if role {
+		filter = bson.D{{
+			Key: "$and",
+			Value: bson.D{
+				{Key: "_id", Value: primitive.Regex{
+					Pattern: keyword,
+					Options: "",
+				}},
+				{Key: "owner", Value: shop},
+			},
+		}}
+	}
+	opt := options.Find()
+	if page > 0 {
+		page = (page - 1) * 10
+	} else {
+		page = 0
+	}
+	fmt.Println(shop, page)
+	opt.SetSkip(int64(page))
+	opt.SetLimit(10)
+	total, _ := Client.db.Collection("good").CountDocuments(context.TODO(), filter)
+	pagenumber := total / 10
+	result, err := Client.db.Collection("good").Find(context.TODO(), filter, opt)
+	if err != nil {
+		return nil, 0
+	}
+	for result.Next(context.TODO()) {
+		var p Product
+		err := result.Decode(&p)
+		if err != nil {
+			return nil, 0
+		}
+		pList = append(pList, p)
+	}
+	return pList, pagenumber
+}
+
 //Comment module
 type Comment struct {
 	Username string `json:"username" bson:"username"`

@@ -283,13 +283,17 @@ func CheckOwner(owner string, u store.UserInformation) bool {
 	return true
 }
 
-func ProductList(ctx echo.Context) error {
+func ProductListByShop(ctx echo.Context) error {
+	page := ctx.Param("id")
 	id := ctx.Get("user_id").(int32)
-	page := ctx.Param("page")
-	p, _ := strconv.Atoi(page)
+	p, err := strconv.Atoi(page)
+	if err != nil {
+		fmt.Println(err)
+		fmt.Println(p)
+	}
 	var s store.Shop
 	s.Owner = id
-	err := s.GetByOwner()
+	err = s.GetByOwner()
 	if err != nil {
 		return err
 	}
@@ -308,4 +312,53 @@ func ProductList(ctx echo.Context) error {
 		Message: "",
 		Data:    resp,
 	})
+}
+
+func SearchInShop(ctx echo.Context) error {
+	keyword := ctx.QueryParam("keyword")
+	page := ctx.QueryParam("page")
+	Type := ctx.QueryParam("type")
+	fmt.Println(keyword, page, Type)
+	p, _ := strconv.Atoi(page)
+	if p < 1 {
+		p = 1
+	}
+	id := ctx.Get("user_id").(int32)
+	var s store.Shop
+	s.Owner = id
+	err := s.GetByOwner()
+	if err != nil {
+		return err
+	}
+	switch Type {
+	default:
+		data, total := store.SearchInShop(s.Id, keyword, CheckOwner(s.Id, u), p)
+		resp := struct {
+			Total int64           `json:"total"`
+			Data  []store.Product `json:"data"`
+		}{
+			Total: total,
+			Data:  data,
+		}
+		return handler.Response(ctx, handler.ResponseStruct{
+			Code:    0,
+			Message: "",
+			Data:    resp,
+		})
+	case "productId":
+		data, total := store.SearchInShopById(s.Id, keyword, CheckOwner(s.Id, u), p)
+		resp := struct {
+			Total int64           `json:"total"`
+			Data  []store.Product `json:"data"`
+		}{
+			Total: total,
+			Data:  data,
+		}
+		return handler.Response(ctx, handler.ResponseStruct{
+			Code:    0,
+			Message: "",
+			Data:    resp,
+		})
+	}
+
 }

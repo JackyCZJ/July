@@ -2,9 +2,13 @@ package store
 
 import (
 	"context"
+	"fmt"
 	"time"
 
 	cache2 "github.com/go-redis/cache"
+
+	"go.mongodb.org/mongo-driver/mongo"
+
 	"go.mongodb.org/mongo-driver/bson/primitive"
 
 	"go.mongodb.org/mongo-driver/mongo/options"
@@ -100,18 +104,22 @@ func (o *Order) Get() error {
 	if err != cache2.ErrCacheMiss && err != nil {
 		return nil
 	}
-	ob, err := primitive.ObjectIDFromHex(o.OrderNo)
-	if err != nil {
-		return err
-	}
+	//ob, err := primitive.ObjectIDFromHex(o.OrderNo)
+	//if err != nil {
+	//	return err
+	//}
 	filter := bson.D{
 		{
-			"_id", ob,
+			"_id", o.OrderNo,
 		},
 	}
 	result := Client.db.Collection("order").FindOne(context.TODO(), filter)
 	if result.Err() != nil {
 		return result.Err()
+	}
+	err = result.Decode(&o)
+	if err != nil {
+		return err
 	}
 	cache.SetCc("Order."+o.OrderNo, o, 1*time.Hour)
 	return nil
@@ -134,31 +142,36 @@ func (o *Order) UpdateAll() error {
 
 func OrderList(userId int32, role int) []Order {
 	filter := bson.D{}
-	u := UserInformation{}
-	u.Id = userId
+	var result *mongo.Cursor
+	var OrderList []Order
 
 	switch role {
 	case 1:
 		filter = bson.D{
 			{"buyer", userId},
 		}
-	case 2:
+		result, err = Client.db.Collection("order").Find(context.TODO(), filter)
+		if err != nil {
+			return OrderList
+		}
+	case 2, 3:
 		s := Shop{}
-		s.Owner = u.Id
-		_ = s.GetByOwner()
-		filter = bson.D{
-			{
-				Key: "$or", Value: bson.D{
+		s.Owner = userId
+		err = s.GetByOwner()
+		if err != nil {
+			fmt.Println(err)
+		}
+		result, err = Client.db.Collection("order").Aggregate(context.TODO(),
+			[]bson.D{
+				{{"$match", bson.D{
 					{"buyer", userId},
 					{"seller", s.Id},
-				},
+				}}},
 			},
+		)
+		if err != nil {
+			return OrderList
 		}
-	}
-	var OrderList []Order
-	result, err := Client.db.Collection("order").Find(context.TODO(), filter)
-	if err != nil {
-		return OrderList
 	}
 
 	if result.Next(context.TODO()) {

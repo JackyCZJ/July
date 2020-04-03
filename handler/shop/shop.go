@@ -3,6 +3,8 @@ package shop
 import (
 	"fmt"
 
+	"github.com/jackyczj/July/log"
+
 	"go.mongodb.org/mongo-driver/mongo"
 
 	"github.com/jackyczj/July/handler"
@@ -24,6 +26,16 @@ func Add(ctx echo.Context) error {
 		err = s.Create()
 		if err != nil {
 			return handler.ErrorResp(ctx, err, 500)
+		}
+		var u store.UserInformation
+		u.Id = id
+		user, err := u.GetUser()
+		if err != nil {
+			log.Logworker.Fatal(err)
+		}
+		err = user.ChangeRole(2)
+		if err != nil {
+			log.Logworker.Fatal(err)
 		}
 		return handler.Response(ctx, handler.ResponseStruct{
 			Code:    0,

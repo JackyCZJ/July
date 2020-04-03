@@ -5,6 +5,10 @@ import (
 	"fmt"
 	"time"
 
+	cache2 "github.com/go-redis/cache"
+
+	"github.com/jackyczj/July/cache"
+
 	"go.mongodb.org/mongo-driver/bson/primitive"
 
 	"github.com/jackyczj/July/utils"
@@ -163,7 +167,7 @@ func Search(key string, pageNumber int, PerPage int) ([]Product, int, error) {
 	filter := bson.D{
 		{Key: "$and",
 			Value: bson.A{
-				bson.D{{Key: "name", Value: primitive.Regex{Pattern: key, Options: ""}}},
+				bson.D{{Key: "name", Value: primitive.Regex{Pattern: key, Options: "i"}}},
 				bson.D{{Key: "shelves", Value: bson.D{{Key: "$ne", Value: false}}}},
 			},
 		},
@@ -178,10 +182,30 @@ func Search(key string, pageNumber int, PerPage int) ([]Product, int, error) {
 	opt.SetSkip(int64(page))
 	opt.SetLimit(int64(PerPage))
 	Total, _ := Client.db.Collection("good").CountDocuments(context.TODO(), filter)
+	if pageNumber > 0 {
+		cachekey := fmt.Sprintf("%v.%v.%v", key, pageNumber-1, PerPage)
+		var lastid string
+		err := cache.GetCc(cachekey, &lastid)
+
+		switch err {
+		case nil:
+			filter = bson.D{
+				{Key: "$and",
+					Value: bson.A{
+						bson.D{{Key: "name", Value: primitive.Regex{Pattern: key, Options: "i"}}},
+						bson.D{{Key: "_id", Value: bson.D{{Key: "$gt", Value: lastid}}}},
+						bson.D{{Key: "shelves", Value: bson.D{{Key: "$ne", Value: false}}}},
+					},
+				},
+			}
+		case cache2.ErrCacheMiss:
+		}
+	}
 	result, err := Client.db.Collection("good").Find(context.TODO(), filter, &opt)
 	if err != nil {
 		return nil, 0, err
 	}
+	var lastId string
 	for result.Next(context.TODO()) {
 		var p Product
 		err := result.Decode(&p)
@@ -189,14 +213,20 @@ func Search(key string, pageNumber int, PerPage int) ([]Product, int, error) {
 			return nil, 0, err
 		}
 		pList = append(pList, p)
+		lastId = p.ProductId
 	}
+	if pageNumber > 0 {
+		cachekey := fmt.Sprintf("%v.%v.%v", key, pageNumber, PerPage)
+		cache.SetCc(cachekey, lastId, 5*time.Minute)
+	}
+
 	return pList, int(Total), nil
 }
 
-func GetListByShop(shop string, role bool) []Product {
+func GetListByShop(shop string, role bool, page int) ([]Product, int64) {
 	var pList []Product
 	filter := bson.D{{Key: "owner", Value: shop}}
-	if !role {
+	if role {
 		filter = bson.D{{
 			Key: "$and",
 			Value: bson.D{
@@ -204,32 +234,59 @@ func GetListByShop(shop string, role bool) []Product {
 				{Key: "shelves", Value: false}},
 		}}
 	}
-	result, err := Client.db.Collection("good").Find(context.TODO(), filter)
+	opt := options.Find()
+	if page > 0 {
+		page = (page - 1) * 10
+	} else {
+		page = 0
+	}
+	fmt.Println(shop, page)
+	opt.SetSkip(int64(page))
+	opt.SetLimit(10)
+	total, _ := Client.db.Collection("good").CountDocuments(context.TODO(), filter)
+	pagenumber := total / 10
+	result, err := Client.db.Collection("good").Find(context.TODO(), filter, opt)
 	if err != nil {
-		return nil
+		return nil, 0
 	}
 	for result.Next(context.TODO()) {
 		var p Product
 		err := result.Decode(&p)
 		if err != nil {
-			return nil
+			return nil, 0
 		}
 		pList = append(pList, p)
 	}
-	return pList
+	return pList, pagenumber
 }
 
 func Suggestion(keyword string) []string {
-	filter := bson.D{{
-		Key: "name", Value: primitive.Regex{Pattern: keyword, Options: ""}},
-	}
+	//filter := bson.D{{
+	//	Key: "name", Value: primitive.Regex{Pattern: keyword, Options: ""}},
+	//}
 	var resultGroup []string
 
 	if keyword == "" {
 		return resultGroup
 	}
 
-	result, err := Client.db.Collection("good").Find(context.TODO(), filter)
+	result, err := Client.db.Collection("good").Aggregate(context.TODO(), mongo.Pipeline{
+		bson.D{
+			{Key: "$match",
+				Value: bson.D{{
+					Key: "name", Value: primitive.Regex{Pattern: keyword, Options: "i"}},
+				},
+			},
+		},
+		bson.D{
+			{
+				Key: "$sample",
+				Value: bson.D{
+					{Key: "size", Value: 6},
+				},
+			},
+		},
+	})
 	if err != nil {
 		return []string{}
 	}

@@ -21,9 +21,9 @@ p, 0 , /api/v1/Goods/* , GET
 p, 1 , /api/v1/Goods/* , GET
 p, 2 , /api/v1/Goods/* ,  (GET|POST|PUT|DELETE)
 
-p , 1 , /api/v1/Order/:id , (GET|POST|PUT|DELETE)
+p , 1 , /api/v1/Order/Get/:id , (GET|POST|PUT|DELETE)
 p , 1 , /api/v1/Order ,     (POST|PUT)
-p , 2 , /api/v1/Order/:id/* , (GET|POST|PUT|DELETE)
+p , 2 , /api/v1/Order/Get/:id , (GET|POST|PUT|DELETE)
 
 
 p, 0 , /api/v1/Shop/* ,  GET

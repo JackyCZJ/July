@@ -58,7 +58,7 @@ func List(ctx echo.Context) error {
 }
 
 func Get(ctx echo.Context) error {
-	id := ctx.Get(":id").(string)
+	id := ctx.Param("id")
 	o := store.Order{}
 	o.OrderNo = id
 	err := o.Get()

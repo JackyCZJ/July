@@ -1,7 +1,6 @@
 package auth
 
 import (
-	"fmt"
 	"net/http"
 	"strconv"
 
@@ -66,6 +65,5 @@ func (a *Config) CheckPermission(e echo.Context) (bool, error) {
 	r := strconv.Itoa(role.(int))
 	method := e.Request().Method
 	path := e.Request().URL.Path
-	fmt.Println(r, method, path)
 	return a.Enforcer.Enforce(r, path, method)
 }

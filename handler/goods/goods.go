@@ -3,6 +3,7 @@ package goods
 import (
 	"fmt"
 	"net/http"
+	"strconv"
 
 	"github.com/jackyczj/July/handler"
 	"github.com/jackyczj/July/store"
@@ -27,14 +28,10 @@ func Search(ctx echo.Context) error {
 		Total   int             `json:"total"`
 		Data    []store.Product `json:"data"`
 	}{}
-	err := ctx.Bind(&search)
-	if err != nil {
-		return handler.ErrorResp(ctx, err, 404)
-	}
-	key := search.Keyword
-	page := search.Page
-	perPage := search.PerPage
-	data, total, err := store.Search(key, page, perPage)
+	search.Keyword = ctx.Param("keyword")
+	search.Page, _ = strconv.Atoi(ctx.Param("page"))
+	search.PerPage, _ = strconv.Atoi(ctx.Param("pageSize"))
+	data, total, err := store.Search(search.Keyword, search.Page, search.PerPage)
 	if err != nil {
 		return handler.ErrorResp(ctx, err, 404)
 	}
@@ -284,4 +281,31 @@ func CheckOwner(owner string, u store.UserInformation) bool {
 		return false
 	}
 	return true
+}
+
+func ProductList(ctx echo.Context) error {
+	id := ctx.Get("user_id").(int32)
+	page := ctx.Param("page")
+	p, _ := strconv.Atoi(page)
+	var s store.Shop
+	s.Owner = id
+	err := s.GetByOwner()
+	if err != nil {
+		return err
+	}
+	u := store.UserInformation{}
+	u.Id = id
+	data, total := store.GetListByShop(s.Id, CheckOwner(s.Id, u), p)
+	resp := struct {
+		Total int64           `json:"total"`
+		Data  []store.Product `json:"data"`
+	}{
+		Total: total,
+		Data:  data,
+	}
+	return handler.Response(ctx, handler.ResponseStruct{
+		Code:    0,
+		Message: "",
+		Data:    resp,
+	})
 }

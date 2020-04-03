@@ -1,6 +1,7 @@
 package store
 
 import (
+	"fmt"
 	"testing"
 	"time"
 )
@@ -14,16 +15,28 @@ import (
 func TestOrder_Create(t *testing.T) {
 	o := Order{
 		Seller:      "5e788d61234cca37ca522ee6",
-		Buyer:       29677,
-		Payment:     0,
+		Buyer:       31209,
+		Payment:     3222,
 		PaymentType: 0,
 		ShippingTo:  0,
-		Item:        nil,
-		CreateAt:    time.Now(),
-		Status:      UnPay,
+		Item: []Item{
+			{
+				31209, 1,
+			},
+		},
+		CreateAt: time.Now(),
+		Status:   UnPay,
 	}
 	err := o.Create()
 	if err != nil {
 		t.Fatal(err)
 	}
+}
+
+func TestOrder_Get(t *testing.T) {
+	var o Order
+	o.OrderNo = "5e85c6a1c2dc168f9abe1575"
+	err := o.Get()
+	fmt.Println(err)
+	fmt.Println(o)
 }

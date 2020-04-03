@@ -129,8 +129,8 @@ func ShopList(pageNumber int, PerPage int) ([]Shop, int, error) {
 func SearchShop(keyword string, pageNumber int, PerPage int) ([]Shop, int, error) {
 	filter := bson.D{{
 		Key: "$or", Value: []bson.D{
-			{{Key: "name", Value: primitive.Regex{Pattern: keyword, Options: ""}}},
-			{{Key: "owner", Value: primitive.Regex{Pattern: keyword, Options: ""}}},
+			{{Key: "name", Value: primitive.Regex{Pattern: keyword, Options: "i"}}},
+			{{Key: "owner", Value: primitive.Regex{Pattern: keyword, Options: "i"}}},
 		}},
 	}
 	var shopList []Shop
@@ -164,13 +164,9 @@ func SearchShop(keyword string, pageNumber int, PerPage int) ([]Shop, int, error
 
 //根据ID获取商店信息
 func (s *Shop) Get() error {
-	i, err := primitive.ObjectIDFromHex(s.Id)
-	if err != nil {
-		return err
-	}
 	filter := bson.D{
 		{
-			"_id", i,
+			"_id", s.Id,
 		},
 	}
 	result := Client.db.Collection("shop").FindOne(context.TODO(), filter)

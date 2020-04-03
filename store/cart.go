@@ -5,13 +5,8 @@ import (
 	"fmt"
 	"time"
 
-	"go.mongodb.org/mongo-driver/bson"
-	"go.mongodb.org/mongo-driver/mongo/options"
-	"go.mongodb.org/mongo-driver/x/bsonx"
-
 	"github.com/jackyczj/July/utils"
-
-	"go.mongodb.org/mongo-driver/mongo"
+	"go.mongodb.org/mongo-driver/bson"
 )
 
 type item struct {
@@ -34,16 +29,9 @@ func CartAdd(id int32, product Product, count int) error {
 	if err != nil {
 		return err
 	}
-	_, err = Client.db.Collection("cart").Indexes().CreateOne(context.TODO(), mongo.IndexModel{
-		Keys:    bsonx.Doc{{Key: "owner", Value: bsonx.Int32(1)}},
-		Options: options.Index().SetUnique(true),
-	})
 	i := item{}
 	i.ProductId = product.ProductId
 	i.Count = count
-	if err != nil {
-		return err
-	}
 	update := bson.D{
 		{
 			Key: "$push",

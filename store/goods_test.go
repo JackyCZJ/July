@@ -18,15 +18,15 @@ func TestProduct_Add(t *testing.T) {
 		Store:    10,
 		Price:    1213,
 		Off:      1223,
-		Owner:    "5e788d61234cca37ca522ee6",
+		Owner:    "5e85d088626760d4407aa390",
 		CreateAt: time.Now(),
 		Shelves:  true,
 	}
-	for i := 3000; i < 100000; i++ {
-		p.Price = 2333
-		p.Store = 2333
+	for i := 1; i < 100; i++ {
+		p.Price = 4333
+		p.Store = 4333
 		p.CreateAt = time.Now()
-		p.Name = fmt.Sprintf("awsl%v", i)
+		p.Name = fmt.Sprintf("魅族%v", i)
 		err := p.Add()
 		if err != nil {
 			t.Fatal(err)
@@ -63,8 +63,8 @@ func TestGetRandom(t *testing.T) {
 }
 
 func TestGetListByShop(t *testing.T) {
-	p := GetListByShop("1231", true)
-	if len(p) == 0 {
+	p, i := GetListByShop("5e85d088626760d4407aa390", true, 1)
+	if i == 0 {
 		t.Fatal("Get fail")
 	}
 	fmt.Println(p)

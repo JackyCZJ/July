@@ -37,7 +37,7 @@ func Load(e *echo.Echo) {
 	//	CookieMaxAge: 86400,
 	//}
 	e.Use(middleware.CORSWithConfig(middleware.CORSConfig{
-		AllowOrigins: []string{"https://localhost:2333", "http://localhost:2333", "http://localhost:3000"},
+		AllowOrigins: []string{"https://localhost:2333", "http://localhost:2333", "http://localhost:3000", "http://localhost:3001"},
 		AllowHeaders: []string{echo.HeaderOrigin, echo.HeaderContentType, echo.HeaderAccept},
 		AllowMethods: []string{http.MethodGet, http.MethodHead, http.MethodPut, http.MethodPatch, http.MethodPost, http.MethodDelete},
 	}))
@@ -84,7 +84,7 @@ func Load(e *echo.Echo) {
 
 		Goods.GET("/index", goods.Index) //index goods list
 		Goods.GET("/:id", goods.Get)
-		Goods.GET("/search/*", goods.Search)
+		Goods.GET("/search/:keyword/:page/:pageSize", goods.Search)
 		//search hint
 		Goods.GET("/suggestion/:keyword", goods.Suggestion)
 		Goods.GET("/suggestion/", goods.Suggestion)
@@ -106,7 +106,8 @@ func Load(e *echo.Echo) {
 	{
 		//Shop
 		fmt.Println("➡️ inject shop api")
-		Shop.GET("/search/*", shopHandler.Search)
+		Shop.GET("/search/:keyword/:page/:pageSize", shopHandler.Search)
+		Shop.GET("/order/list", order.List)
 		Shop.GET("/list", shopHandler.List)
 		Shop.POST("/:id", shopHandler.Add)
 		Shop.GET("/status/:id", shopHandler.Status)
@@ -114,26 +115,23 @@ func Load(e *echo.Echo) {
 		Shop.POST("/product/add", goods.Add)
 		Shop.DELETE("/product/:id", goods.Delete)
 		Shop.PUT("/product/:id", goods.Edit)
+		Shop.GET("/product/:page", goods.ProductList)
 
 		//取现
 		//shopping.POST("/takeMoney",shopHandler.TakeMoney)
 	}
 
-	Cate := api.Group("Cate")
+	Cate := api.Group("/Cate")
 	{
 		Cate.GET("/:id", cate.Get)
 		Cate.POST("/add", cate.Add)
 		Cate.DELETE("/delete", cate.Delete)
 	}
 
-	Order := api.Group("Order")
+	Order := api.Group("/Order")
 	{
 		fmt.Println("➡️ inject order api")
 		Order.POST("/Create", order.Create)
-		//Order.POST("/Pay", order.Pay)
-		//Order.POST("/Consignment", order.Consignment)
-		//Order.POST("/Confirm", order.Confirm)
-
 		Order.GET("/List", order.List)
 		Order.GET("/Get/:id", order.Get)
 		Order.DELETE("/Delete/:id", order.Delete)
@@ -150,7 +148,6 @@ func Load(e *echo.Echo) {
 		{
 			shop.GET("/List", adminHandler.ShopList)
 			shop.DELETE("/:id", shopHandler.Delete)
-			//shop.POST("/close",Admin.shopClose)
 		}
 		adminUser := admin.Group("/users")
 		{

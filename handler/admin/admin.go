@@ -1,6 +1,8 @@
 package admin
 
 import (
+	"fmt"
+
 	"github.com/jackyczj/July/handler"
 	"github.com/jackyczj/July/store"
 	"github.com/labstack/echo/v4"
@@ -32,6 +34,7 @@ func ShopList(ctx echo.Context) error {
 
 func Status(ctx echo.Context) error {
 	s, err := store.StatusGet()
+	fmt.Println("here")
 	if err != nil {
 		return handler.ErrorResp(ctx, err, 404)
 	}

@@ -9,7 +9,6 @@ import (
 	"go.mongodb.org/mongo-driver/mongo"
 	"go.mongodb.org/mongo-driver/x/bsonx"
 
-	"github.com/go-redis/cache/v7"
 	"github.com/rs/xid"
 
 	cacheClient "github.com/jackyczj/July/cache"
@@ -25,7 +24,7 @@ import (
 type UserInformation struct {
 	Id        int32     `json:"id,omitempty" bson:"id,omitempty"`
 	Username  string    `json:"username" validate:"min=1,max=32" bson:"username,omitempty"`
-	Password  string    `json:"_,omitempty" validate:"min=1,max=32" bson:"password,omitempty"`
+	Password  string    `json:"-" validate:"min=1,max=32" bson:"password,omitempty"`
 	Email     string    `json:"email,omitempty"  bson:"email,omitempty"`
 	Avatar    string    `json:"avatar" bson:"avatar,omitempty"`
 	Phone     string    `json:"phone,omitempty" bson:"phone,omitempty"`
@@ -70,14 +69,14 @@ func (u *UserInformation) Create() error {
 
 //获取用户信息
 func (u *UserInformation) GetUser() (*UserInformation, error) {
-	err := cacheClient.GetCc("user."+fmt.Sprint(u.Id), &u)
-	switch err {
-	case nil:
-		return u, nil
-	default:
-		return nil, err
-	case cache.ErrCacheMiss:
-	}
+	//err := cacheClient.GetCc("user."+fmt.Sprint(u.Id), &u)
+	//switch err {
+	//case nil:
+	//	return u, nil
+	//default:
+	//	return nil, err
+	//case cache.ErrCacheMiss:
+	//}
 
 	m, err := utils.StructToBson(u)
 	if err != nil {
@@ -87,7 +86,7 @@ func (u *UserInformation) GetUser() (*UserInformation, error) {
 	if err != nil {
 		return nil, err
 	}
-	cacheClient.SetCc("user."+fmt.Sprint(u.Id), u, time.Hour*24)
+	//cacheClient.SetCc("user."+fmt.Sprint(u.Id), u, time.Hour*24)
 	return u, nil
 }
 
@@ -177,6 +176,22 @@ func UserList(pageNumber int, PerPage int) ([]UserInformation, int, error) {
 		userList = append(userList, user)
 	}
 	return userList, int(count), nil
+}
+
+func (u *UserInformation) ChangeRole(role int) error {
+	filter := u
+	update := bson.D{
+		{
+			"$set",
+			bson.D{{"role", role}},
+		},
+	}
+	_, err := Client.db.Collection("user").UpdateOne(context.TODO(), filter, update)
+	if err != nil {
+		return err
+	}
+
+	return nil
 }
 
 func UserExist(username string) bool {

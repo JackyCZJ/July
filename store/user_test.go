@@ -71,3 +71,17 @@ func TestUserInformation_del(t *testing.T) {
 func TestUserExist(t *testing.T) {
 	fmt.Println(UserExist("JackyTest"))
 }
+
+func TestUserInformation_ChangeRole(t *testing.T) {
+	var u UserInformation
+	u.Id = 23086
+	us, err := u.GetUser()
+	if err != nil {
+		t.Fatal(err)
+	}
+	err = us.ChangeRole(1)
+	if err != nil {
+		t.Fatal(err)
+
+	}
+}

@@ -7,21 +7,18 @@ import (
 )
 
 func TestShop_Create(t *testing.T) {
-	for i := 5; i < 10; i++ {
-		shop := Shop{
-			Name:        fmt.Sprintf("测试小店%v", i),
-			Owner:       23086,
-			CreateAt:    time.Now(),
-			Description: "测试用小店",
-			IsClose:     false,
-			IsDelete:    false,
-		}
-		err := shop.Create()
-		if err != nil {
-			t.Fatal(err)
-		}
+	shop := Shop{
+		Name:        fmt.Sprintf("测试小店%v", 11),
+		Owner:       31209,
+		CreateAt:    time.Now(),
+		Description: "测试用小店",
+		IsClose:     false,
+		IsDelete:    false,
 	}
-
+	err := shop.Create()
+	if err != nil {
+		t.Fatal(err)
+	}
 }
 
 func TestShop_Delete(t *testing.T) {

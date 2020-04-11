@@ -16,14 +16,15 @@ p , 2 , /user/logout , POST
 p , 1 , /user/setting/* , (GET|POST|PUT|DELETE)
 p , 2 , /user/setting/* , (GET|POST|PUT|DELETE)
 
+p , 1, /api/v1/Users/* , (GET|POST|PUT|DELETE)
+p , 2, /api/v1/Users/* , (GET|POST|PUT|DELETE)
 
 p, 0 , /api/v1/Goods/* , GET
 p, 1 , /api/v1/Goods/* , GET
 p, 2 , /api/v1/Goods/* ,  (GET|POST|PUT|DELETE)
 
-p , 1 , /api/v1/Order/Get/:id , (GET|POST|PUT|DELETE)
-p , 1 , /api/v1/Order ,     (POST|PUT)
-p , 2 , /api/v1/Order/Get/:id , (GET|POST|PUT|DELETE)
+p , 1 , /api/v1/Order/* , (GET|POST|PUT|DELETE)
+p , 2 , /api/v1/Order/* , (GET|POST|PUT|DELETE)
 
 
 p, 0 , /api/v1/Shop/* ,  GET
@@ -31,6 +32,8 @@ p, 1 , /api/v1/Shop/* ,  GET
 p, 2 , /api/v1/Shop/* , (GET|POST|PUT|DELETE)
 p, 2 , /api/v1/Shop/setting/* ,  (GET|POST|PUT|DELETE)
 
+p, 2 , /api/v1/Category , GET
+p, 2 , /api/v1/Category/* , GET
 
 p, 1 , /api/v1/Cart/* ,  GET
 p, 1 , /api/v1/Cart/* ,  POST

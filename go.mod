@@ -21,6 +21,7 @@ require (
 	github.com/jackyczj/fdfs_client v0.0.0-20200303020550-8bb0af7095af
 	github.com/json-iterator/go v1.1.7 // indirect
 	github.com/klauspost/compress v1.10.3 // indirect
+	github.com/labstack/echo-contrib v0.9.0
 	github.com/labstack/echo/v4 v4.1.6
 	github.com/magiconair/properties v1.8.1 // indirect
 	github.com/mattn/go-colorable v0.1.4 // indirect

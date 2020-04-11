@@ -76,5 +76,14 @@ func UserBan(ctx echo.Context) error {
 }
 
 func ShopBan(ctx echo.Context) error {
+	shop := ctx.Param(":id")
+	r := ctx.Get("role")
+	if r.(int) != 3 {
+		return handler.ErrorResp(ctx, fmt.Errorf("? "), 403)
+	}
+	err := store.ShopClose(shop)
+	if err != nil {
+		return handler.ErrorResp(ctx, err, 500)
+	}
 	return nil
 }

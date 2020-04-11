@@ -2,8 +2,9 @@ package goods
 
 import (
 	"fmt"
-	"net/http"
 	"strconv"
+
+	"github.com/jackyczj/July/log"
 
 	"github.com/jackyczj/July/handler"
 	"github.com/jackyczj/July/store"
@@ -82,11 +83,7 @@ func Add(ctx echo.Context) error {
 	u.Id = id
 	u, err := u.GetUser()
 	if err != nil {
-		return handler.Response(ctx, handler.ResponseStruct{
-			Code:    0,
-			Message: err.Error(),
-			Data:    nil,
-		})
+		return handler.ErrorResp(ctx, err, 500)
 	}
 	switch u.Role {
 	case 2, 3:
@@ -101,56 +98,24 @@ func Add(ctx echo.Context) error {
 	good := new(store.Product)
 	err = ctx.Bind(&good)
 	if err != nil {
-		return handler.ErrorResp(ctx, err, 404)
+		log.Logworker.Error(err)
+		return handler.ErrorResp(ctx, err, 500)
 	}
 	var s store.Shop
 	s.Owner = u.Id
 	err = s.GetByOwner()
 	if err != nil {
-		return handler.ErrorResp(ctx, err, 404)
+		return handler.ErrorResp(ctx, err, 500)
 	}
 	good.Owner = s.Id
-	form, err := ctx.MultipartForm()
-	if err != nil {
-		return err
-	}
-	files := form.File["images"]
-	var pathArray []string
-	if len(files) > 4 {
-		return handler.ErrorResp(ctx, fmt.Errorf("too many images , less than or qual 4 plz. "), 403)
-	}
-	for _, file := range files {
-		src, err := file.Open()
-		if file.Size > 150 {
-			return handler.ErrorResp(ctx, fmt.Errorf("image too big "), 403)
-		}
-		if err != nil {
-			return err
-		}
-		buffer := make([]byte, 512)
-		_, err = src.Read(buffer)
-		if err != nil {
-			return err
-		}
-		contentType := http.DetectContentType(buffer)
-		switch contentType {
-		case "image/png", "image/gif", "image/jpeg", "image/jpg":
-		default:
-			return handler.ErrorResp(ctx, fmt.Errorf("InVail file type. "), 403)
-		}
-		// Copy
-		path, err := store.Upload(src, file.Filename)
-		if err != nil {
-			return err
-		}
-		_ = src.Close()
-		pathArray = append(pathArray, path)
-	}
-	good.ImageUri = pathArray
 	if err = good.Add(); err != nil {
 		return handler.ErrorResp(ctx, err, 500)
 	}
-	return nil
+	return handler.Response(ctx, handler.ResponseStruct{
+		Code:    0,
+		Message: "",
+		Data:    nil,
+	})
 }
 
 /*
@@ -283,22 +248,41 @@ func CheckOwner(owner string, u store.UserInformation) bool {
 	return true
 }
 
+func ProductListByShopId(ctx echo.Context) error {
+	shop := ctx.Param("id")
+	page := ctx.QueryParam("page")
+	p, _ := strconv.Atoi(page)
+	if p == 0 {
+		p = 1
+	}
+	data, total := store.GetListByShop(shop, false, p)
+	resp := struct {
+		Total int64           `json:"total"`
+		Data  []store.Product `json:"data"`
+	}{
+		Total: total,
+		Data:  data,
+	}
+	return handler.Response(ctx, handler.ResponseStruct{
+		Code:    0,
+		Message: "",
+		Data:    resp,
+	})
+}
+
 func ProductListByShop(ctx echo.Context) error {
 	page := ctx.Param("id")
 	id := ctx.Get("user_id").(int32)
-	p, err := strconv.Atoi(page)
-	if err != nil {
-		fmt.Println(err)
-		fmt.Println(p)
-	}
+	p, _ := strconv.Atoi(page)
 	var s store.Shop
 	s.Owner = id
-	err = s.GetByOwner()
+	err := s.GetByOwner()
 	if err != nil {
 		return err
 	}
 	u := store.UserInformation{}
 	u.Id = id
+
 	data, total := store.GetListByShop(s.Id, CheckOwner(s.Id, u), p)
 	resp := struct {
 		Total int64           `json:"total"`

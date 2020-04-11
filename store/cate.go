@@ -2,6 +2,7 @@ package store
 
 import (
 	"context"
+	"fmt"
 
 	"github.com/jackyczj/July/log"
 
@@ -9,8 +10,8 @@ import (
 )
 
 type Cate struct {
-	Name     string   `json:"name" bson:"name"`
-	Children []string `json:"children"`
+	Name   string `bson:"_id" json:"name"`
+	Parent string `json:"parent" bson:"parent"`
 }
 
 func (c *Cate) InsertCate() error {
@@ -40,9 +41,29 @@ func (c *Cate) Get() error {
 	return nil
 }
 
+func GetCateByParent(name string) []Cate {
+	fmt.Println(name)
+	filter := bson.D{
+		{
+			"parent", name,
+		},
+	}
+	c := make([]Cate, 0)
+	r, err := Client.db.Collection("cate").Find(context.TODO(), filter)
+	if err != nil {
+		return nil
+	}
+	for r.Next(context.TODO()) {
+		var a Cate
+		_ = r.Decode(&a)
+		c = append(c, a)
+	}
+	return c
+}
+
 func GetCateTree() []Cate {
 	var cateTree []Cate
-	r, err := Client.db.Collection("cate").Find(context.TODO(), bson.M{})
+	r, err := Client.db.Collection("cate").Find(context.TODO(), bson.D{{Key: "parent", Value: "root"}})
 	if err != nil {
 		log.Logworker.Fatal(err)
 	}
@@ -54,32 +75,14 @@ func GetCateTree() []Cate {
 	return cateTree
 }
 
-func (c *Cate) AddToCate(newC string) error {
-	update := bson.D{
-		{
-			Key: "$push",
-			Value: bson.D{
-				{Key: "children", Value: newC},
-			},
-		},
-	}
-	_, err := Client.db.Collection("cate").UpdateOne(context.TODO(), c, update)
-	if err != nil {
-		return err
-	}
-	return nil
-}
-
 func (c *Cate) DeleteFromCate(del string) error {
 	update := bson.D{
 		{
-			Key: "$pull",
-			Value: bson.D{
-				{Key: "children", Value: del},
-			},
+			Key:   "name",
+			Value: del,
 		},
 	}
-	_, err := Client.db.Collection("cate").UpdateOne(context.TODO(), c, update)
+	_, err := Client.db.Collection("cate").DeleteOne(context.TODO(), update)
 	if err != nil {
 		return err
 	}

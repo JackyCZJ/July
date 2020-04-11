@@ -21,7 +21,7 @@ func TestOrder_Create(t *testing.T) {
 		ShippingTo:  0,
 		Item: []Item{
 			{
-				31209, 1,
+				"5e832e5b041c8d2f73392b25", 1,
 			},
 		},
 		CreateAt: time.Now(),
@@ -39,4 +39,13 @@ func TestOrder_Get(t *testing.T) {
 	err := o.Get()
 	fmt.Println(err)
 	fmt.Println(o)
+}
+
+func TestOrder_Update(t *testing.T) {
+	var o Order
+	o.OrderNo = "5e831bb6aa9d2a09f68295fe"
+	err := o.Update("status", "2")
+	if err != nil {
+		t.Fatal(err)
+	}
 }

@@ -51,3 +51,24 @@ func StatusGet() (*Status, error) {
 	s.User = int(User)
 	return &s, nil
 }
+
+func ShopClose(id string) error {
+	var s Shop
+	s.Id = id
+	err := s.Set("is_close", true)
+	if err != nil {
+		return err
+	}
+	err = s.Get()
+	if err != nil {
+		return err
+	}
+	var u UserInformation
+	u.Id = s.Owner
+	us, _ := u.GetUser()
+	err = us.Set("role", 1)
+	if err != nil {
+		return err
+	}
+	return nil
+}

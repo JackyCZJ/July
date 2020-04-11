@@ -2,10 +2,9 @@ package store
 
 import (
 	"context"
-	"fmt"
 	"time"
 
-	cache2 "github.com/go-redis/cache"
+	"github.com/jackyczj/July/log"
 
 	"go.mongodb.org/mongo-driver/mongo"
 
@@ -32,7 +31,7 @@ import (
 */
 type Order struct {
 	OrderNo     string    `json:"OrderNo" bson:"_id"`
-	Seller      string    `json:"seller" bson:"seller,omitempty"` //买家商户Id
+	Seller      string    `json:"seller" bson:"seller,omitempty"` //卖家商户Id
 	Buyer       int32     `json:"buyer" bson:"buyer"`             //买家用户id
 	Payment     float64   `json:"payment" bson:"payment" `
 	PaymentType int       `json:"payment_type" bson:"payment_type,omitempty" `
@@ -47,8 +46,8 @@ type Order struct {
 }
 
 type Item struct {
-	ProductId int32 `json:"product_id" bson:"_id"` //商品id
-	Count     int   `json:"count"`
+	ProductId string `json:"product_id" bson:"_id"` //商品id
+	Count     int    `json:"count"`
 }
 
 var err error
@@ -63,7 +62,6 @@ func (o *Order) Create() error {
 	if err != nil {
 		return err
 	}
-	cache.SetCc("Order."+o.OrderNo, o, 1*time.Hour)
 	return nil
 }
 
@@ -85,10 +83,13 @@ func (o *Order) Delete() error {
 
 //订单修改
 func (o *Order) Update(filed string, value interface{}) error {
-	op := options.FindOneAndUpdate()
-	op.SetProjection(bson.D{{Key: "OrderNo", Value: o.OrderNo}})
+	filter := bson.D{
+		{
+			"_id", o.OrderNo,
+		},
+	}
 	update := bson.D{{Key: "$set", Value: bson.D{{Key: filed, Value: value}}}}
-	result := Client.db.Collection("order").FindOneAndUpdate(context.TODO(), o, update)
+	result := Client.db.Collection("order").FindOneAndUpdate(context.TODO(), filter, update)
 	if result.Err() != nil {
 		return result.Err()
 	}
@@ -100,17 +101,17 @@ func (o *Order) Update(filed string, value interface{}) error {
 }
 
 func (o *Order) Get() error {
-	err := cache.GetCc("Order."+o.OrderNo, &o)
-	if err != cache2.ErrCacheMiss && err != nil {
-		return nil
-	}
+	//err := cache.GetCc("Order."+o.OrderNo, &o)
+	//if err != cache2.ErrCacheMiss && err != nil {
+	//	return err
+	//}
 	//ob, err := primitive.ObjectIDFromHex(o.OrderNo)
 	//if err != nil {
 	//	return err
 	//}
 	filter := bson.D{
 		{
-			"_id", o.OrderNo,
+			Key: "_id", Value: o.OrderNo,
 		},
 	}
 	result := Client.db.Collection("order").FindOne(context.TODO(), filter)
@@ -121,13 +122,13 @@ func (o *Order) Get() error {
 	if err != nil {
 		return err
 	}
-	cache.SetCc("Order."+o.OrderNo, o, 1*time.Hour)
+	//cache.SetCc("Order."+o.OrderNo, o, 1*time.Hour)
 	return nil
 }
 
 func (o *Order) UpdateAll() error {
 	op := options.FindOneAndUpdate()
-	op.SetProjection(bson.D{{Key: "OrderNo", Value: o.OrderNo}})
+	op.SetProjection(bson.D{{Key: "_id", Value: o.OrderNo}})
 	update := bson.D{{Key: "$set", Value: o}}
 	result := Client.db.Collection("order").FindOneAndUpdate(context.TODO(), o, update)
 	if result.Err() != nil {
@@ -140,45 +141,79 @@ func (o *Order) UpdateAll() error {
 	return nil
 }
 
-func OrderList(userId int32, role int) []Order {
-	filter := bson.D{}
-	var result *mongo.Cursor
-	var OrderList []Order
+type humanOrder struct {
+	Order
+	Shop string `json:"shopName"`
+}
 
-	switch role {
-	case 1:
-		filter = bson.D{
-			{"buyer", userId},
-		}
-		result, err = Client.db.Collection("order").Find(context.TODO(), filter)
-		if err != nil {
-			return OrderList
-		}
-	case 2, 3:
-		s := Shop{}
-		s.Owner = userId
-		err = s.GetByOwner()
-		if err != nil {
-			fmt.Println(err)
-		}
-		result, err = Client.db.Collection("order").Aggregate(context.TODO(),
-			[]bson.D{
-				{{"$match", bson.D{
-					{"buyer", userId},
-					{"seller", s.Id},
-				}}},
+func ShopOrderList(userId int32) []humanOrder {
+	var result *mongo.Cursor
+	var OrderList []humanOrder
+	var o Shop
+	o.Owner = userId
+	err = o.GetByOwner()
+	if err != nil {
+		log.Logworker.Error(err)
+	}
+	result, err = Client.db.Collection("order").Find(context.TODO(),
+		bson.D{
+			{
+				Key:   "seller",
+				Value: o.Id,
 			},
-		)
-		if err != nil {
-			return OrderList
-		}
+		},
+	)
+	if err != nil {
+		log.Logworker.Error(err)
+		return OrderList
 	}
 
-	if result.Next(context.TODO()) {
-		var o Order
-		if err = result.Decode(&o); err != nil {
+	for result.Next(context.TODO()) {
+		var o humanOrder
+		if err = result.Decode(&o.Order); err != nil {
 			return OrderList
 		}
+		s := Shop{
+			Id: o.Seller,
+		}
+		err = s.Get()
+		if err != nil {
+			log.Logworker.Error(err)
+		}
+		o.Shop = s.Name
+		OrderList = append(OrderList, o)
+	}
+	return OrderList
+}
+func OrderList(userId int32) []humanOrder {
+	var result *mongo.Cursor
+	var OrderList []humanOrder
+	result, err = Client.db.Collection("order").Find(context.TODO(),
+		bson.D{
+			{
+				Key:   "buyer",
+				Value: userId,
+			},
+		},
+	)
+	if err != nil {
+		log.Logworker.Error(err)
+		return OrderList
+	}
+
+	for result.Next(context.TODO()) {
+		var o humanOrder
+		if err = result.Decode(&o.Order); err != nil {
+			return OrderList
+		}
+		s := Shop{
+			Id: o.Seller,
+		}
+		err = s.Get()
+		if err != nil {
+			log.Logworker.Error(err)
+		}
+		o.Shop = s.Name
 		OrderList = append(OrderList, o)
 	}
 	return OrderList

@@ -4,6 +4,8 @@ import (
 	"fmt"
 	"net/http"
 
+	"github.com/labstack/echo-contrib/prometheus"
+
 	"github.com/jackyczj/July/handler/cate"
 
 	"github.com/jackyczj/July/handler/order"
@@ -28,6 +30,8 @@ func Load(e *echo.Echo) {
 	e.Use(middleware.Logger())
 	e.Use(middleware.Recover())
 	e.Use(middleware.CORS())
+	p := prometheus.NewPrometheus("echo", nil)
+	p.Use(e)
 	//c := middleware.CSRFConfig{
 	//	Skipper:      middleware.DefaultSkipper,
 	//	TokenLength:  32,
@@ -69,6 +73,7 @@ func Load(e *echo.Echo) {
 		Account.POST("/register", user.Register)
 	}
 	e.GET("/image/:filename", file.Image)
+	e.POST("/upload", file.Upload)
 
 	//Todo: ⬇️
 	api := e.Group("/api/v1")
@@ -110,7 +115,8 @@ func Load(e *echo.Echo) {
 		Shop.GET("/order/list", order.List)
 		Shop.GET("/list", shopHandler.List)
 		Shop.POST("/:id", shopHandler.Add)
-		Shop.GET("/status/:id", shopHandler.Status)
+		Shop.GET("/status", shopHandler.Status)
+		Shop.GET("/:id/List/*", goods.ProductListByShopId)
 
 		Shop.POST("/product/add", goods.Add)
 		Shop.DELETE("/product/:id", goods.Delete)
@@ -122,11 +128,11 @@ func Load(e *echo.Echo) {
 		//shopping.POST("/takeMoney",shopHandler.TakeMoney)
 	}
 
-	Cate := api.Group("/Category")
+	Cate := api.Group("/category")
 	{
 		Cate.GET("/:id", cate.Get)
 		Cate.POST("/add", cate.Add)
-		Cate.GET("/List/:shop", cate.List)
+		Cate.GET("/List/:id", cate.List)
 		Cate.DELETE("/delete", cate.Delete)
 	}
 
@@ -137,7 +143,11 @@ func Load(e *echo.Echo) {
 		Order.GET("/List", order.List)
 		Order.GET("/Get/:id", order.Get)
 		Order.DELETE("/Delete/:id", order.Delete)
+		Order.POST("/Pay/:id", order.Pay)
 		Order.PUT("/Edit/:id", order.Edit)
+		Order.PUT("/Send/*", order.Transmit)
+		Order.POST("/Confirm/:id", order.Confirm)
+		Order.DELETE("/Cancel/:id", order.Cancel)
 	}
 
 	admin := e.Group("/admin")
@@ -150,6 +160,7 @@ func Load(e *echo.Echo) {
 		{
 			shop.GET("/List", adminHandler.ShopList)
 			shop.DELETE("/:id", shopHandler.Delete)
+			shop.PUT("/ban/:id", adminHandler.ShopBan)
 		}
 		adminUser := admin.Group("/users")
 		{

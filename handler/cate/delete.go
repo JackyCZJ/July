@@ -6,27 +6,28 @@ import (
 	"github.com/labstack/echo/v4"
 )
 
-var delreq struct {
-	New    string `json:"new"`
+type delreq struct {
+	Name   string `json:"name"`
 	Parent string `json:"parent"`
 }
 
 func Delete(ctx echo.Context) error {
-	err := ctx.Bind(&delreq)
+	var d delreq
+	err := ctx.Bind(&d)
 	if err != nil {
 		return handler.ErrorResp(ctx, err, 500)
 	}
-	if addreq.Parent == "root" {
+	if d.Parent == "root" {
 		c := store.Cate{}
-		c.Name = delreq.New
+		c.Name = d.Name
 		err := c.DeleteCate()
 		if err != nil {
 			return handler.ErrorResp(ctx, err, 500)
 		}
 	} else {
 		c := store.Cate{}
-		c.Name = delreq.Parent
-		err = c.DeleteFromCate(delreq.New)
+		c.Name = d.Parent
+		err = c.DeleteFromCate(d.Name)
 		if err != nil {
 			return handler.ErrorResp(ctx, err, 500)
 		}

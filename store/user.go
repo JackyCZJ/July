@@ -69,15 +69,6 @@ func (u *UserInformation) Create() error {
 
 //获取用户信息
 func (u *UserInformation) GetUser() (*UserInformation, error) {
-	//err := cacheClient.GetCc("user."+fmt.Sprint(u.Id), &u)
-	//switch err {
-	//case nil:
-	//	return u, nil
-	//default:
-	//	return nil, err
-	//case cache.ErrCacheMiss:
-	//}
-
 	m, err := utils.StructToBson(u)
 	if err != nil {
 		return nil, err
@@ -86,7 +77,6 @@ func (u *UserInformation) GetUser() (*UserInformation, error) {
 	if err != nil {
 		return nil, err
 	}
-	//cacheClient.SetCc("user."+fmt.Sprint(u.Id), u, time.Hour*24)
 	return u, nil
 }
 

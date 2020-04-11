@@ -1,6 +1,7 @@
 package auth
 
 import (
+	"fmt"
 	"net/http"
 	"strconv"
 
@@ -10,13 +11,9 @@ import (
 )
 
 type (
-	// Config defines the config for CasbinAuth middleware.
 	Config struct {
-		// Skipper defines a function to skip middleware.
 		Skipper middleware.Skipper
 
-		// Enforcer CasbinAuth main rule.
-		// Required.
 		Enforcer *casbin.Enforcer
 	}
 )
@@ -65,5 +62,6 @@ func (a *Config) CheckPermission(e echo.Context) (bool, error) {
 	r := strconv.Itoa(role.(int))
 	method := e.Request().Method
 	path := e.Request().URL.Path
+	fmt.Println(r, path, method)
 	return a.Enforcer.Enforce(r, path, method)
 }

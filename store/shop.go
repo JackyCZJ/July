@@ -7,8 +7,6 @@ import (
 
 	"go.mongodb.org/mongo-driver/bson/primitive"
 
-	"github.com/jackyczj/July/utils"
-
 	"go.mongodb.org/mongo-driver/bson"
 	"go.mongodb.org/mongo-driver/mongo/options"
 	"go.mongodb.org/mongo-driver/x/bsonx"
@@ -54,11 +52,9 @@ func (s *Shop) Delete() error {
 		if err = sessionContext.StartTransaction(); err != nil {
 			return err
 		}
-		m, err := utils.StructToBson(s)
-		if err != nil {
-			return err
-		}
-		result, err := Client.db.Collection("shop").DeleteOne(sessionContext, m)
+		ob, _ := primitive.ObjectIDFromHex(s.Id)
+		filter := bson.D{{Key: "_id", Value: ob}}
+		result, err := Client.db.Collection("shop").DeleteOne(sessionContext, filter)
 		if err != nil {
 			err = sessionContext.AbortTransaction(sessionContext)
 			return err
@@ -78,8 +74,10 @@ func (s *Shop) Set(filed string, value interface{}) error {
 		}
 		op := options.FindOneAndUpdate()
 		op.SetProjection(bson.D{{Key: "name", Value: s.Name}})
+		ob, _ := primitive.ObjectIDFromHex(s.Id)
+		filter := bson.D{{Key: "_id", Value: ob}}
 		update := bson.D{{Key: "$set", Value: bson.D{{Key: filed, Value: value}}}}
-		result := Client.db.Collection("shop").FindOneAndUpdate(context.TODO(), s, update)
+		result := Client.db.Collection("shop").FindOneAndUpdate(context.TODO(), filter, update)
 		if result.Err() != nil {
 			return result.Err()
 		}
@@ -164,11 +162,8 @@ func SearchShop(keyword string, pageNumber int, PerPage int) ([]Shop, int, error
 
 //根据ID获取商店信息
 func (s *Shop) Get() error {
-	filter := bson.D{
-		{
-			"_id", s.Id,
-		},
-	}
+	ob, _ := primitive.ObjectIDFromHex(s.Id)
+	filter := bson.D{{Key: "_id", Value: ob}}
 	result := Client.db.Collection("shop").FindOne(context.TODO(), filter)
 	if result.Err() != nil {
 		return result.Err()

@@ -18,7 +18,7 @@ func TestProduct_Add(t *testing.T) {
 		Store:    10,
 		Price:    1213,
 		Off:      1223,
-		Owner:    "5e85d088626760d4407aa390",
+		Owner:    "5e8b1f6ba1b1bb082367d698",
 		CreateAt: time.Now(),
 		Shelves:  true,
 	}
@@ -45,7 +45,7 @@ func TestSearch(t *testing.T) {
 
 func TestProduct_Get(t *testing.T) {
 	var p Product
-	p.ProductId = "123123"
+	p.ProductId = "5e832e5b041c8d2f73392b27"
 	err := p.Get()
 	if err != nil {
 		t.Fatal(err)
@@ -76,4 +76,10 @@ func TestSuggestion(t *testing.T) {
 		t.Fatal("Get fail")
 	}
 	fmt.Println(p)
+}
+
+func TestGetListByShop1(t *testing.T) {
+	data, total := GetListByShop("5e8b1f6ba1b1bb082367d698", false, 1)
+	fmt.Println(data)
+	fmt.Println(total)
 }

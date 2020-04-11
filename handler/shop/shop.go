@@ -122,9 +122,10 @@ func Search(ctx echo.Context) error {
 }
 
 func Status(ctx echo.Context) error {
-	id := ctx.Param("id")
+	var u store.UserInformation
+	u.Id = ctx.Get("user_id").(int32)
 	s := store.Shop{}
-	s.Id = id
+	s.Owner = u.Id
 	ss, err := s.Status()
 	if err != nil {
 		return handler.ErrorResp(ctx, err, 404)

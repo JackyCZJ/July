@@ -8,8 +8,8 @@ import (
 
 func TestShop_Create(t *testing.T) {
 	shop := Shop{
-		Name:        fmt.Sprintf("测试小店%v", 11),
-		Owner:       31209,
+		Name:        fmt.Sprintf("测试小店%v", 3),
+		Owner:       29677,
 		CreateAt:    time.Now(),
 		Description: "测试用小店",
 		IsClose:     false,
@@ -49,7 +49,7 @@ func TestShopList(t *testing.T) {
 
 func TestShop_Get(t *testing.T) {
 	shop := Shop{
-		Id: "5e775a8e6eeb4543911c2c03",
+		Id: "5e8b1f6ba1b1bb082367d698",
 	}
 	if shop.Get() != nil {
 		t.Fatal(shop.Get())
@@ -61,11 +61,11 @@ func TestShop_Get(t *testing.T) {
 func TestShop_ShopModify(t *testing.T) {
 	shop := Shop{
 		Id:          "5e775a8e6eeb4543911c2c03",
-		Name:        "测试小店2",
-		Owner:       32519,
+		Name:        "测试小店1",
+		Owner:       29677,
 		CreateAt:    time.Now(),
 		Description: "测试用小店",
-		IsClose:     false,
+		IsClose:     true,
 		IsDelete:    false,
 	}
 	if err := shop.ShopModify(); err != nil {
@@ -74,7 +74,17 @@ func TestShop_ShopModify(t *testing.T) {
 }
 
 func TestShopList1(t *testing.T) {
-	_, count, err := ShopList(1, 1)
+	data, count, err := ShopList(1, 1)
 	fmt.Println(err)
 	fmt.Println(count)
+	fmt.Println(data)
+}
+
+func TestShop_Set(t *testing.T) {
+	var s Shop
+	s.Id = "5e8b1f6ba1b1bb082367d698"
+	err := s.Set("is_close", false)
+	if err != nil {
+		t.Fatal(err)
+	}
 }

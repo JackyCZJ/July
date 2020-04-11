@@ -10,8 +10,8 @@ import (
 )
 
 type item struct {
-	ProductId string  `json:"_" bson:"product_id"`
-	Product   Product `bson:"_"`
+	ProductId string  `json:"-" bson:"product_id"`
+	Product   Product `json:"product" bson:"-"`
 	Count     int     `bson:"count,omitempty"`
 }
 
@@ -22,7 +22,7 @@ type Cart struct {
 	UpdateAt time.Time `bson:"update_at,omitempty"`
 }
 
-func CartAdd(id int32, product Product, count int) error {
+func CartAdd(id int32, product string, count int) error {
 	var stash Cart
 	stash.Owner = id
 	filter, err := utils.StructToBson(stash)
@@ -30,7 +30,7 @@ func CartAdd(id int32, product Product, count int) error {
 		return err
 	}
 	i := item{}
-	i.ProductId = product.ProductId
+	i.ProductId = product
 	i.Count = count
 	update := bson.D{
 		{
@@ -50,7 +50,7 @@ func CartAdd(id int32, product Product, count int) error {
 	return nil
 }
 
-func CartDel(id int32, product ...Product) error {
+func CartDel(id int32, product ...string) error {
 	var stash Cart
 	stash.Owner = id
 	filter, err := utils.StructToBson(stash)
@@ -59,7 +59,7 @@ func CartDel(id int32, product ...Product) error {
 	}
 	var it item
 	for p := range product {
-		it.ProductId = product[p].ProductId
+		it.ProductId = product[p]
 		update := bson.D{
 			{
 				Key: "$pull",
@@ -73,7 +73,7 @@ func CartDel(id int32, product ...Product) error {
 			return err
 		}
 		if result.MatchedCount == 0 {
-			return fmt.Errorf("Add Cart Error ")
+			return fmt.Errorf("Del Cart Error ")
 		}
 	}
 	return nil
@@ -91,7 +91,7 @@ func CartClear(id int32) error {
 			Key: "$set",
 			Value: bson.D{
 				{
-					"item", []item{},
+					Key: "item", Value: []item{},
 				},
 			},
 		},

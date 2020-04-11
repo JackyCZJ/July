@@ -19,7 +19,8 @@ import (
 )
 
 type Product struct {
-	ProductId   string    `json:"product_id" bson:"_id"`                    //商品id
+	ProductId   string    `json:"product_id" bson:"_id"` //商品id
+	Subtitle    string    `json:"subtitle" bson:"subtitle,omitempty"`
 	Name        string    `json:"name" bson:"name,omitempty"`               //商品名
 	ImageUri    []string  `json:"image_uri" bson:"image_uri,omitempty"`     //商品图片url
 	Description string    `json:"description" bson:"description,omitempty"` //商品介绍
@@ -40,13 +41,13 @@ type Type struct {
 func (p *Product) Add() error {
 	id := primitive.NewObjectID()
 	p.ProductId = id.Hex()
+	p.CreateAt = time.Now()
 	return Client.client.UseSession(context.TODO(), func(sessionContext mongo.SessionContext) error {
 		if err = sessionContext.StartTransaction(); err != nil {
 			return err
 		}
 		_, err = Client.db.Collection("good").InsertOne(sessionContext, p)
 		if err != nil {
-			fmt.Println(err)
 			return sessionContext.AbortTransaction(sessionContext)
 		} else {
 			return sessionContext.CommitTransaction(sessionContext)
@@ -81,7 +82,7 @@ func (p *Product) Set(filed string, value interface{}) error {
 			return err
 		}
 		op := options.FindOneAndUpdate()
-		op.SetProjection(bson.D{{Key: "product_id", Value: p.ProductId}})
+		op.SetProjection(bson.D{{Key: "_id", Value: p.ProductId}})
 		update := bson.D{{Key: "$set", Value: bson.D{{Key: filed, Value: value}}}}
 		result := Client.db.Collection("good").FindOneAndUpdate(context.TODO(), p, update)
 		if result.Err() != nil {
@@ -224,15 +225,13 @@ func Search(key string, pageNumber int, PerPage int) ([]Product, int, error) {
 }
 
 func GetListByShop(shop string, role bool, page int) ([]Product, int64) {
-	var pList []Product
-	filter := bson.D{{Key: "owner", Value: shop}}
+	filter := bson.M{
+		"$and": []bson.M{
+			{"owner": shop},
+			{"shelves": true}},
+	}
 	if role {
-		filter = bson.D{{
-			Key: "$and",
-			Value: bson.D{
-				{Key: "owner", Value: shop},
-				{Key: "shelves", Value: false}},
-		}}
+		filter = bson.M{"owner": shop}
 	}
 	opt := options.Find()
 	if page > 0 {
@@ -244,11 +243,13 @@ func GetListByShop(shop string, role bool, page int) ([]Product, int64) {
 	opt.SetSkip(int64(page))
 	opt.SetLimit(10)
 	total, _ := Client.db.Collection("good").CountDocuments(context.TODO(), filter)
-	pagenumber := total / 10
-	result, err := Client.db.Collection("good").Find(context.TODO(), filter, opt)
+
+	result, err := Client.db.Collection("good").Find(context.TODO(), &filter, opt)
 	if err != nil {
+		fmt.Println(err)
 		return nil, 0
 	}
+	var pList []Product
 	for result.Next(context.TODO()) {
 		var p Product
 		err := result.Decode(&p)
@@ -257,7 +258,7 @@ func GetListByShop(shop string, role bool, page int) ([]Product, int64) {
 		}
 		pList = append(pList, p)
 	}
-	return pList, pagenumber
+	return pList, total
 }
 
 func Suggestion(keyword string) []string {
@@ -303,17 +304,26 @@ func Suggestion(keyword string) []string {
 
 func SearchInShop(shop, keyword string, role bool, page int) ([]Product, int64) {
 	var pList []Product
-	filter := bson.D{{Key: "owner", Value: shop}}
+	filter := bson.D{{
+		Key: "$and",
+		Value: []bson.D{
+			{{Key: "name", Value: primitive.Regex{
+				Pattern: keyword,
+				Options: "i",
+			}}},
+			{{Key: "owner", Value: shop}},
+			{{Key: "shelves", Value: true}}},
+	}}
 	if role {
 		filter = bson.D{{
 			Key: "$and",
-			Value: bson.D{
-				{Key: "name", Value: primitive.Regex{
+			Value: []bson.D{
+				{{Key: "name", Value: primitive.Regex{
 					Pattern: keyword,
-					Options: "",
-				}},
-				{Key: "owner", Value: shop},
-				{Key: "shelves", Value: false}},
+					Options: "i",
+				}}},
+				{{Key: "owner", Value: shop}},
+			},
 		}}
 	}
 	opt := options.Find()
@@ -346,23 +356,23 @@ func SearchInShopById(shop, keyword string, role bool, page int) ([]Product, int
 	var pList []Product
 	filter := bson.D{{
 		Key: "$and",
-		Value: bson.D{
-			{Key: "_id", Value: primitive.Regex{
+		Value: []bson.D{
+			{{Key: "_id", Value: primitive.Regex{
 				Pattern: keyword,
-				Options: "",
-			}},
-			{Key: "owner", Value: shop},
-			{Key: "shelves", Value: true}},
+				Options: "i",
+			}}},
+			{{Key: "owner", Value: shop}},
+			{{Key: "shelves", Value: true}}},
 	}}
 	if role {
 		filter = bson.D{{
 			Key: "$and",
-			Value: bson.D{
-				{Key: "_id", Value: primitive.Regex{
+			Value: []bson.D{
+				{{Key: "_id", Value: primitive.Regex{
 					Pattern: keyword,
-					Options: "",
-				}},
-				{Key: "owner", Value: shop},
+					Options: "i",
+				}}},
+				{{Key: "owner", Value: shop}},
 			},
 		}}
 	}
@@ -377,6 +387,9 @@ func SearchInShopById(shop, keyword string, role bool, page int) ([]Product, int
 	opt.SetLimit(10)
 	total, _ := Client.db.Collection("good").CountDocuments(context.TODO(), filter)
 	pagenumber := total / 10
+	if pagenumber < 0 {
+		pagenumber = 1
+	}
 	result, err := Client.db.Collection("good").Find(context.TODO(), filter, opt)
 	if err != nil {
 		return nil, 0
